@@ -12,5 +12,5 @@ openssl pkcs12 -in /etc/nginx/ssl/ssl.p12 -out /etc/nginx/ssl/ssl.key.pem -clcer
 chmod 777 -R /etc/nginx/ssl
 
 echo "Updating nginx config"
-ln -sf /home/docker/nginx/ssl.conf /etc/nginx/ssl/ssl.conf
-ln -sf /home/docker/nginx/dhparams.pem /etc/nginx/ssl/dhparams.pem
+ln -sf /home/site/docker/nginx/ssl.conf /etc/nginx/ssl/ssl.conf
+ln -sf /home/site/docker/nginx/dhparams.pem /etc/nginx/ssl/dhparams.pem

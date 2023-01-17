@@ -55,7 +55,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Creating folders for the project
 RUN mkdir -p /home/LogFiles/
 RUN mkdir -p /home/site/wwwroot/
-RUN mkdir -p /home/docker/
+RUN mkdir -p /home/site/docker/
 RUN mkdir /etc/nginx/ssl/
 RUN mkdir /etc/nginx/conf.d/
 RUN mkdir -p /etc/supervisor/conf.d/
@@ -63,7 +63,7 @@ RUN mkdir -p /run/php/
 
 # Copying configuration files to the container
 # COPY 	/usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
-COPY ./.docker /home/docker
+COPY ./.docker /home/site/docker
 COPY sshd_config /etc/ssh/
 RUN touch /run/php/php-fpm.sock
 

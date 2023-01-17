@@ -22,20 +22,20 @@ cat /etc/motd
 eval $(printenv | sed -n "s/^\([^=]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/g' | sed '/=/s//="/' | sed 's/$/"/' >> /etc/profile)
 
 echo "Link nginx config files"
-ln -sf /home/docker/nginx/nginx.conf /etc/nginx/nginx.conf
-ln -sf /home/docker/nginx/default.conf /etc/nginx/http.d/default.conf
+ln -sfn /home/site/docker/nginx/nginx.conf /etc/nginx/nginx.conf
+ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/http.d/default.conf
 
 echo "Link php-fpm config files"
 rm /usr/local/etc/php-fpm.d/zz-docker.conf
-ln -sf /home/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
-ln -sf /home/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
-ln -sf /home/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
+ln -sfn /home/site/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
+ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
+ln -sfn /home/site/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
 echo "Add jobs on crontab"
-crontab /home/docker/cron/crontab
+crontab /home/site/docker/cron/crontab
 
 echo "link supervisor file"
-ln -sf /home/docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+ln -sfn /home/site/docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 
 echo "Starting services..."
 

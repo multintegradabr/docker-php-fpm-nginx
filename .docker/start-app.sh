@@ -1,1 +1,1 @@
-#ln -sf /home/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
+#ln -sf /home/site/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
