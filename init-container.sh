@@ -44,7 +44,7 @@ ln -sfn /home/site/docker/supervisor/supervisord.conf /etc/supervisor/supervisor
 echo "Starting services..."
 
 echo "Starting SSH server"
-rc-service sshd start
+/usr/sbin/sshd
 
 echo "Starting cron"
 crontab -l

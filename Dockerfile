@@ -76,6 +76,6 @@ RUN chmod 775 /bin/init-container.sh
 
 WORKDIR /home/site/wwwroot/
 
-EXPOSE 80 443
+EXPOSE 80 443 2222
 
 ENTRYPOINT ["/bin/init-container.sh"]
