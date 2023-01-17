@@ -10,7 +10,12 @@ RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
 
 # Essential configuration
 RUN echo "UTC-3" > /etc/timezone
-RUN echo "$SSH_PASSWD" | chpasswd
+RUN apk add openssh \
+  && echo "$SSH_PASSWD" | chpasswd \
+  && cd /etc/ssh/ \
+  && ssh-keygen -A
+
+
 
 # Install essential Packages
 RUN apk add --no-cache \
