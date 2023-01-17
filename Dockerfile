@@ -61,20 +61,18 @@ RUN mkdir /etc/nginx/conf.d/
 RUN mkdir -p /etc/supervisor/conf.d/
 RUN mkdir -p /run/php/
 
-WORKDIR /home/site/wwwroot/
-
 # Copying configuration files to the container
 # COPY 	/usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
 COPY ./.docker /home/docker
 COPY sshd_config /etc/ssh/
-COPY ./init_container.sh /bin/init_container.sh
 RUN touch /run/php/php-fpm.sock
-RUN chmod 775 /bin/init_container.sh
 
 # Copy script file for initializing the container
-COPY ./init_container.sh /bin/init_container.sh
-RUN chmod 775 /bin/init_container.sh
+COPY ./init-container.sh /bin/init-container.sh
+RUN chmod 775 /bin/init-container.sh
+
+WORKDIR /home/site/wwwroot/
 
 EXPOSE 80 443
 
-CMD ["/bin/init_container.sh"]
+ENTRYPOINT ["/bin/init-container.sh"]
