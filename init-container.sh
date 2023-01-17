@@ -21,6 +21,10 @@ cat /etc/motd
 # Get environment variables to show up in SSH session
 eval $(printenv | sed -n "s/^\([^=]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/g' | sed '/=/s//="/' | sed 's/$/"/' >> /etc/profile)
 
+echo "Create folders"
+mkdir -p /home/site/wwwroot
+mv -vf /var/www/docker /home/site/
+
 echo "Link nginx config files"
 ln -sfn /home/site/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/http.d/default.conf
