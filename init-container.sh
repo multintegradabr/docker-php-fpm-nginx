@@ -5,14 +5,14 @@ rm -rf /home/LogFiles/execContainer.log
 rm -rf /home/LogFiles/cron.log
 
 cat >/etc/motd <<EOL 
-  _____                               
-  /  _  \ __________ _________   ____  
- /  /_\  \\___   /  |  \_  __ \_/ __ \ 
-/    |    \/    /|  |  /|  | \/\  ___/ 
-\____|__  /_____ \____/ |__|    \___  >
-        \/      \/                  \/ 
-APP SERVICE ON LINUX
-
+ ___ ___  __ __  _     ______  ____  ____   ______    ___   ____  ____    ____  ___     ____ 
+|   |   ||  |  || |   |      ||    ||    \ |      |  /  _] /    ||    \  /    ||   \   /    |
+| _   _ ||  |  || |   |      | |  | |  _  ||      | /  [_ |   __||  D  )|  o  ||    \ |  o  |
+|  \_/  ||  |  || |___|_|  |_| |  | |  |  ||_|  |_||    _]|  |  ||    / |     ||  D  ||     |
+|   |   ||  :  ||     | |  |   |  | |  |  |  |  |  |   [_ |  |_ ||    \ |  _  ||     ||  _  |
+|   |   ||     ||     | |  |   |  | |  |  |  |  |  |     ||     ||  .  \|  |  ||     ||  |  |
+|___|___| \__,_||_____| |__|  |____||__|__|  |__|  |_____||___,_||__|\_||__|__||_____||__|__|
+                      A P P   S E R V I C E   O N   L I N U X
 PHP version : `php -v | head -n 1 | cut -d ' ' -f 2`
 EOL
 cat /etc/motd
@@ -27,7 +27,6 @@ mv -vf /var/www/docker /home/site/
 echo "Link nginx config files"
 ln -sfn /home/site/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/http.d/default.conf
-nginx stop
 
 echo "Link php-fpm config files"
 rm /usr/local/etc/php-fpm.d/zz-docker.conf
@@ -48,6 +47,6 @@ echo "Starting SSH server"
 
 echo "Starting cron"
 crontab -l
-
+ 
 echo "Starting supervisord"
-supervisord -c /etc/supervisor.d/supervisord.ini
+supervisord -c /etc/supervisord.conf

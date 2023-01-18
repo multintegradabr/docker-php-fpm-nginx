@@ -14,10 +14,10 @@ RUN apk add openssh \
   && echo "$SSH_PASSWD" | chpasswd \
   && cd /etc/ssh/ \
   && ssh-keygen -A
+COPY sshd_config /etc/ssh/
 
 # Install essential Packages
 RUN apk add --no-cache \
-  nginx \
   zip \
   grep \
   unzip \
@@ -26,7 +26,6 @@ RUN apk add --no-cache \
   nano \
   wget \
   git \
-  openssh-server \
   openssl \
   bash \
   github-cli \
@@ -52,29 +51,32 @@ RUN apk add --no-cache \
   && docker-php-ext-install intl \
   && docker-php-ext-install bcmath
 
+RUN mkdir -p /run/php/
+RUN touch /run/php/php-fpm.sock
+RUN touch /run/php/php-fpm.pid
+
 # Download Composer Files
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Creating folders for the project
-RUN mkdir -p /home/LogFiles/
+# Install and configure Nginx
+RUN apk add --no-cache nginx
+RUN touch /run/nginx/nginx.pid
 RUN mkdir /etc/nginx/ssl/
 RUN mkdir /etc/nginx/conf.d/
+RUN ln -sf /dev/stdout /var/log/nginx/access.log
+RUN ln -sf /dev/stderr /var/log/nginx/error.log
+
+# Creating folders for the project
+RUN mkdir -p /home/LogFiles/
 RUN mkdir -p /etc/supervisor.d/
-RUN mkdir -p /run/php/
 
 # Copying configuration files to the container
 COPY ./.docker /var/www/docker
-COPY sshd_config /etc/ssh/
-RUN touch /run/php/php-fpm.sock
-RUN touch /run/supervisord.sock
-RUN ln -sf /dev/stdout /var/log/nginx/access.log
-RUN ln -sf /dev/stderr /var/log/nginx/error.log
+WORKDIR /home/site/wwwroot/
 
 # Copy script file for initializing the container
 COPY ./init-container.sh /bin/init-container.sh
 RUN chmod 775 /bin/init-container.sh
-
-WORKDIR /home/site/wwwroot/
 
 EXPOSE 80 443 2222
 
