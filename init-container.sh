@@ -4,7 +4,6 @@
 rm -rf /home/LogFiles/execContainer.log
 rm -rf /home/LogFiles/cron.log
 
-exec 1>> /home/LogFiles/execContainer.log 2>&1
 cat >/etc/motd <<EOL 
   _____                               
   /  _  \ __________ _________   ____  
@@ -28,6 +27,7 @@ mv -vf /var/www/docker /home/site/
 echo "Link nginx config files"
 ln -sfn /home/site/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/http.d/default.conf
+nginx stop
 
 echo "Link php-fpm config files"
 rm /usr/local/etc/php-fpm.d/zz-docker.conf
@@ -39,7 +39,7 @@ echo "Add jobs on crontab"
 crontab /home/site/docker/cron/crontab
 
 echo "link supervisor file"
-ln -sfn /home/site/docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+ln -sfn /home/site/docker/supervisor/supervisord.ini /etc/supervisor.d/supervisord.ini
 
 echo "Starting services..."
 
@@ -50,4 +50,4 @@ echo "Starting cron"
 crontab -l
 
 echo "Starting supervisord"
-supervisord -n -c /etc/supervisor/supervisord.conf
+supervisord -c /etc/supervisor.d/supervisord.ini

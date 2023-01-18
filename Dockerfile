@@ -8,14 +8,12 @@ RUN apk update && apk upgrade
 RUN apk add --no-cache --upgrade bash
 RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
 
-# Essential configuration
+# Essential configuration and SSH installation
 RUN echo "UTC-3" > /etc/timezone
 RUN apk add openssh \
   && echo "$SSH_PASSWD" | chpasswd \
   && cd /etc/ssh/ \
   && ssh-keygen -A
-
-
 
 # Install essential Packages
 RUN apk add --no-cache \
@@ -61,14 +59,16 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 RUN mkdir -p /home/LogFiles/
 RUN mkdir /etc/nginx/ssl/
 RUN mkdir /etc/nginx/conf.d/
-RUN mkdir -p /etc/supervisor/conf.d/
+RUN mkdir -p /etc/supervisor.d/
 RUN mkdir -p /run/php/
 
 # Copying configuration files to the container
-# COPY 	/usr/local/etc/php/php.ini-production /usr/local/etc/php/php.ini
 COPY ./.docker /var/www/docker
 COPY sshd_config /etc/ssh/
 RUN touch /run/php/php-fpm.sock
+RUN touch /run/supervisord.sock
+RUN ln -sf /dev/stdout /var/log/nginx/access.log
+RUN ln -sf /dev/stderr /var/log/nginx/error.log
 
 # Copy script file for initializing the container
 COPY ./init-container.sh /bin/init-container.sh
