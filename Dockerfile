@@ -66,10 +66,6 @@ RUN mkdir /etc/nginx/conf.d/
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
 
-# Creating folders for the project
-RUN mkdir -p /home/LogFiles/
-RUN mkdir -p /etc/supervisor.d/
-
 # Copying configuration files to the container
 COPY ./.docker /var/www/docker
 WORKDIR /home/site/wwwroot/

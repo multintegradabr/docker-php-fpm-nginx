@@ -20,9 +20,17 @@ cat /etc/motd
 # Get environment variables to show up in SSH session
 eval $(printenv | sed -n "s/^\([^=]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/g' | sed '/=/s//="/' | sed 's/$/"/' >> /etc/profile)
 
-echo "Create folders"
-mkdir -p /home/site/wwwroot
-mv -vf /var/www/docker /home/site/
+
+#if $WEBSITE_HOSTNAME conains azure
+if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
+    echo "Running on Azure App Service"
+    rm -rf /home/site/docker
+    mv -vf /var/www/docker /home/site/
+else
+    echo "Running on local"
+    mkdir -p /home/site/wwwroot
+    mv -vf /var/www/docker /home/site/
+fi
 
 echo "Link nginx config files"
 ln -sfn /home/site/docker/nginx/nginx.conf /etc/nginx/nginx.conf
@@ -38,6 +46,7 @@ echo "Add jobs on crontab"
 crontab /home/site/docker/cron/crontab
 
 echo "link supervisor file"
+mkdir -p /etc/supervisor.d
 ln -sfn /home/site/docker/supervisor/supervisord.ini /etc/supervisor.d/supervisord.ini
 
 echo "Starting services..."
