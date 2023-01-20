@@ -50,6 +50,11 @@ RUN apk add --no-cache \
   && docker-php-ext-configure intl \
   && docker-php-ext-install intl \
   && docker-php-ext-install bcmath
+  RUN apk --no-cache add pcre-dev ${PHPIZE_DEPS} \
+  && pecl install redis \
+  && docker-php-ext-enable redis \
+  && apk del pcre-dev ${PHPIZE_DEPS} \
+  && rm -rf /tmp/pear
 
 RUN mkdir -p /run/php/
 RUN touch /run/php/php-fpm.sock
