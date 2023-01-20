@@ -7,6 +7,7 @@ ENV SSH_PASSWD "root:Docker!"
 RUN apk update && apk upgrade
 RUN apk add --no-cache --upgrade bash
 RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
+RUN echo "cd /home/site/wwwroot/" >> /etc/bash.bashrc
 
 # Essential configuration and SSH installation
 RUN echo "UTC-3" > /etc/timezone
