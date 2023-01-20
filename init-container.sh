@@ -26,6 +26,8 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
     rm -rf /home/site/docker
     mv -vf /var/www/docker /home/site/
+    echo "Link php opcache config file"
+    ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
 else
     echo "Running on local"
     mkdir -p /home/site/wwwroot
@@ -39,7 +41,6 @@ ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/http.d/default.conf
 echo "Link php-fpm config files"
 rm /usr/local/etc/php-fpm.d/zz-docker.conf
 ln -sfn /home/site/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
-ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
 ln -sfn /home/site/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
 echo "Add jobs on crontab"
