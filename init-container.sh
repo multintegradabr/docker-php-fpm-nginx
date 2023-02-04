@@ -38,7 +38,10 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
         echo "Laravel app is not installed, laravel workers will not be configured"
     fi
 
+    echo "Verifing if Git token are set"
     if [ -z ${GH_TOKEN+x}]; then
+    echo "GH_TOKEN not seted"
+    else
     echo "Update Git credentials"
     cd /home/site & gh auth setup-git
     fi
