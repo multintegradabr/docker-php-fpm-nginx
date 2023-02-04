@@ -21,13 +21,22 @@ cat /etc/motd
 eval $(printenv | sed -n "s/^\([^=]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/g' | sed '/=/s//="/' | sed 's/$/"/' >> /etc/profile)
 
 
-#if $WEBSITE_HOSTNAME conains azure
+# Configure files for Azure App Service
 if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
     rm -rf /home/site/docker
     mv -vf /var/www/docker /home/site/
     echo "Link php opcache config file"
     ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
+
+    echo "Verifing if Laravel app is installed"
+    if [ -f /home/site/wwwroot/artisan ]; then
+        echo "Laravel app is already installed"
+        echo "Configure Laravel workers in supervisor"
+        ln -sf /home/site/docker/supervisor/laravel-workers.ini /etc/supervisor.d/laravel-workers.ini
+    else
+        echo "Laravel app is not installed, laravel workers will not be configured"
+    fi
 else
     echo "Running on local"
     mkdir -p /home/site/wwwroot
