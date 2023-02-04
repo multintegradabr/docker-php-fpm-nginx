@@ -1,5 +1,16 @@
 #!/bin/sh
 
+echo "Cloning App from GitHub..."
+
+if [ -z ${REPO_NAME+x} ]; then
+    echo "REPO_NAME is not defined, set REPO_NAME and try again!"
+    echo "exiting..."
+    exit 1
+else
+rm -rf /home/site/wwwroot/*
+cd /home/site/wwwroot & gh repo clone $REPO_NAME . -- --branch main
+fi
+
 echo "Installing Laravel App..."
 
 echo "Install Laravel dependencies"
@@ -30,4 +41,4 @@ chmod -R 777 /home/site/wwwroot/storage
 echo "Update Laravel bootstrap/cache permissions"
 chmod -R 777 /home/site/wwwroot/bootstrap/cache
 
-echo "Finisher Laravel App installation"
+echo "Finished Laravel App installation"
