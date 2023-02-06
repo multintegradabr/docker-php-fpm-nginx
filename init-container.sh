@@ -37,36 +37,53 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     else
         echo "Laravel app is not installed, laravel workers will not be configured"
     fi
-
-    echo "Verifing if Git token are set"
-    if [ -z ${GH_TOKEN+x}]; then
-    echo "GH_TOKEN not seted"
-    else
-    echo "Update Git credentials"
-    cd /home/site & gh auth setup-git
-    fi
-    
+# Configure files for local development    
 else
     echo "Running on local"
     mkdir -p /home/site/wwwroot
     mv -vf /var/www/docker /home/site/
 fi
 
+# Configure Git credentials
+echo "Verifing if Git token are set"
+if [ -z ${GH_TOKEN+x}]; then
+echo "GH_TOKEN not seted"
+else
+echo "Update Git credentials"
+cd /home/site & gh auth setup-git
+fi
+
+# Configure files for nginx
 echo "Link nginx config files"
 ln -sfn /home/site/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/http.d/default.conf
 
+# Configure files for php
 echo "Link php-fpm config files"
 rm /usr/local/etc/php-fpm.d/zz-docker.conf
 ln -sfn /home/site/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
 ln -sfn /home/site/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
+# Configure files for cron
 echo "Add jobs on crontab"
 crontab /home/site/docker/cron/crontab
 
+# Configure files for supervisor
 echo "link supervisor file"
 mkdir -p /etc/supervisor.d
 ln -sfn /home/site/docker/supervisor/supervisord.ini /etc/supervisor.d/supervisord.ini
+
+# Execute custom scripts
+echo "Execute custom scripts"
+if [ -d "/home/site/docker/init.d" ]; then
+    echo "Custom scripts found"
+    for f in /home/site/docker/init.d/*.sh; do
+    echo "Executing $f"
+    . "$f"
+done
+else
+    echo "Custom scripts not found"
+fi
 
 echo "Starting services..."
 
