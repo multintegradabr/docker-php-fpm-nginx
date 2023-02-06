@@ -15,3 +15,5 @@ else
     echo "Updating nginx config"
     ln -sf /home/site/docker/nginx/ssl.conf /etc/nginx/ssl/ssl.conf
     ln -sf /home/site/docker/nginx/dhparams.pem /etc/nginx/ssl/dhparams.pem
+
+fi

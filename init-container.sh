@@ -26,6 +26,7 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
     rm -rf /home/site/docker
     mv -vf /var/www/docker /home/site/
+    mv -vf /home/site/docker/init.d/* /home/site/init.d/
     echo "Link php opcache config file"
     ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
 
@@ -75,9 +76,9 @@ ln -sfn /home/site/docker/supervisor/supervisord.ini /etc/supervisor.d/superviso
 
 # Execute custom scripts
 echo "Execute custom scripts"
-if [ -d "/home/site/docker/init.d" ]; then
+if [ -d "/home/site/init.d" ]; then
     echo "Custom scripts found"
-    for f in /home/site/docker/init.d/*.sh; do
+    for f in /home/site/init.d/*.sh; do
     echo "Executing $f"
     . "$f"
 done
