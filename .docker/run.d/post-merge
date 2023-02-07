@@ -1,5 +1,7 @@
 #!/bin/sh
 
+exec > >(tee -i /home/site/LogFiles/post-merge.log) 2>&1
+
 remote_repo="origin"
 
 branch="main"
