@@ -6,7 +6,7 @@ branch="main"
 
 cd /home/site/wwwroot
 
-git pull $remote_repo $branch
+git reset --hard $remote_repo/$branch
 
 echo "Updating Laravel App..."
 composer install --no-dev --prefer-dist --optimize-autoloader
