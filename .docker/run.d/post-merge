@@ -1,0 +1,14 @@
+#!/bin/sh
+
+remote_repo="origin"
+
+branch="main"
+
+cd /home/site/wwwroot
+
+git pull $remote_repo $branch
+
+echo "Updating Laravel App..."
+composer install --no-dev --prefer-dist --optimize-autoloader
+php artisan migrate --force
+php artisan db:seed --force

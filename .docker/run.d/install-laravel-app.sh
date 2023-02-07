@@ -7,7 +7,12 @@ if [ -z ${REPO_NAME+x} ]; then
     echo "exiting..."
     exit 1
 else
-cd /home/site/wwwroot & gh repo clone $REPO_NAME . -- --branch main
+    if [ -d "/home/site/wwwroot/.git" ]; then
+        echo "Git folder already exists, skipping clone"
+    else
+        echo "Git folder does not exist, cloning repo"
+        cd /home/site/wwwroot & gh repo clone $REPO_NAME . -- --branch main
+    fi
 fi
 
 echo "Installing Laravel App..."
@@ -26,10 +31,10 @@ echo "Generate Laravel key"
 php artisan key:generate
 
 echo "Migrate Laravel database"
-php artisan migrate
+php artisan migrate --force
 
 echo "Update seeders"
-php artisan db:seed
+php artisan db:seed --force
 
 echo "Enable storage link"
 php artisan storage:link
