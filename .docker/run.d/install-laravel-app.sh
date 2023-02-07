@@ -27,17 +27,35 @@ else
     cp /home/site/wwwroot/.env.example /home/site/wwwroot/.env
 fi
 
+
 echo "Generate Laravel key"
 php artisan key:generate
+if [ $? -ne 0 ]; then
+    echo "key:generate failed, exiting..."
+    exit 1
+fi
+
 
 echo "Migrate Laravel database"
 php artisan migrate --force
+if [ $? -ne 0 ]; then
+    echo "migrate failed, exiting..."
+    exit 1
+fi
 
 echo "Update seeders"
 php artisan db:seed --force
+if [ $? -ne 0 ]; then
+    echo "db:seed failed, exiting..."
+    exit 1
+fi
 
 echo "Enable storage link"
 php artisan storage:link
+if [ $? -ne 0 ]; then
+    echo "storage:link failed, exiting..."
+    exit 1
+fi
 
 echo "Update Laravel storage permissions"
 chmod -R 777 /home/site/wwwroot/storage

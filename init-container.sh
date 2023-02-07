@@ -52,6 +52,7 @@ echo "GH_TOKEN not seted"
 else
 echo "Update Git credentials"
 cd /home/site & gh auth setup-git
+git config --global --add safe.directory /home/site/wwwroot
 fi
 
 # Configure files for nginx
