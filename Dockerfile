@@ -32,6 +32,7 @@ RUN apk add --no-cache \
   github-cli \
   dialog \
   openrc \
+  postgresql-client \
   htop
 
 # Install PHP Libs & Extensions
