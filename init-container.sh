@@ -26,7 +26,14 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
     rm -rf /home/site/docker
     mv -vf /var/www/docker /home/site/
-    mv -vf /home/site/docker/init.d/* /home/site/init.d/
+    if [ -d "/home/site/init.d" ]; then
+        echo "init.d folder already exists"
+    else
+        echo "init.d folder does not exist, creating one"
+        mkdir -p /home/site/init.d
+    fi
+    find /home/site/docker/init.d/* -type f -print0 | xargs -0 mv -t /home/site/init.d/
+    
     echo "Link php opcache config file"
     ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
    
