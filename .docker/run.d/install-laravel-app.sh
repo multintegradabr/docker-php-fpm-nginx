@@ -44,7 +44,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Update seeders"
-php artisan db:seed --force
+php artisan db:seed InitSeeder --force
 if [ $? -ne 0 ]; then
     echo "db:seed failed, exiting..."
     exit 1
@@ -62,5 +62,16 @@ chmod -R 777 /home/site/wwwroot/storage
 
 echo "Update Laravel bootstrap/cache permissions"
 chmod -R 777 /home/site/wwwroot/bootstrap/cache
+
+npm install -g npm
+npm install
+if [ $? -ne 0 ]; then
+    echo "npm install failed, exiting..."
+    exit 1
+fi
+
+npm run dev
+
+supervisorctl restart all
 
 echo "Finished Laravel App installation"
