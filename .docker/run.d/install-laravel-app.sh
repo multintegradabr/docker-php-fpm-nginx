@@ -63,13 +63,14 @@ chmod -R 777 /home/site/wwwroot/storage
 echo "Update Laravel bootstrap/cache permissions"
 chmod -R 777 /home/site/wwwroot/bootstrap/cache
 
+echo "Install npm dependencies"
 npm install -g npm
 npm install
 if [ $? -ne 0 ]; then
     echo "npm install failed, exiting..."
     exit 1
 fi
-
+echo "Build npm assets"
 npm run dev
 
 supervisorctl restart all
