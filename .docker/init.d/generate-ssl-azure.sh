@@ -6,7 +6,6 @@ echo "Copying SSL from Azure"
 # verify if ssl is enabled
 if [ -z ${WEBSITE_LOAD_CERTIFICATES+x} ]; then
     echo "SSL is not enabled"
-    exit 0
 else
     echo "SSL is enabled"
     cp /var/ssl/private/*.p12 /etc/nginx/ssl/ssl.p12
