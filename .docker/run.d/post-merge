@@ -1,0 +1,12 @@
+#!/bin/sh
+
+exec > >(tee -i /home/site/LogFiles/post-merge.log) 2>&1
+
+cd /home/site/wwwroot
+
+git reset --hard $REPO_NAME/$REPO_BRANCH
+
+echo "Updating Laravel App..."
+composer install --no-dev --prefer-dist --optimize-autoloader
+php artisan migrate --force
+php artisan db:seed --force

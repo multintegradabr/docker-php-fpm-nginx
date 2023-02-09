@@ -29,16 +29,7 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     mv -vf /home/site/docker/init.d/* /home/site/init.d/
     echo "Link php opcache config file"
     ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
-
-    echo "Verifing if Laravel app is installed"
-    if [ -f /home/site/wwwroot/artisan ]; then
-        echo "Laravel app is already installed"
-        echo "Configure Laravel workers in supervisor"
-        ln -sf /home/site/docker/supervisor/laravel-workers.ini /etc/supervisor.d/laravel-workers.ini
-    else
-        echo "Laravel app is not installed, laravel workers will not be configured"
-    fi
-# Configure files for local development    
+   
 else
     echo "Running on local"
     mkdir -p /home/site/wwwroot
@@ -48,10 +39,11 @@ fi
 # Configure Git credentials
 echo "Verifing if Git token are set"
 if [ -z ${GH_TOKEN+x}]; then
-echo "GH_TOKEN not seted"
+    echo "GH_TOKEN not seted"
 else
-echo "Update Git credentials"
-cd /home/site & gh auth setup-git
+    echo "Update Git credentials"
+    cd /home/site & gh auth setup-git
+git config --global --add safe.directory /home/site/wwwroot
 fi
 
 # Configure files for nginx
@@ -72,6 +64,14 @@ crontab /home/site/docker/cron/crontab
 # Configure files for supervisor
 echo "link supervisor file"
 mkdir -p /etc/supervisor.d
+echo "Verifing if Laravel app is installed"
+if [ -f /home/site/wwwroot/artisan ]; then
+    echo "Laravel app is already installed"
+    echo "Configure Laravel workers in supervisor"
+    ln -sfn /home/site/docker/supervisor/laravel-workers.ini /etc/supervisor.d/laravel-workers.ini
+else
+    echo "Laravel app is not installed, laravel workers will not be configured"
+fi
 ln -sfn /home/site/docker/supervisor/supervisord.ini /etc/supervisor.d/supervisord.ini
 
 # Execute custom scripts

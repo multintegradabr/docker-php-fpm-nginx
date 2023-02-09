@@ -7,7 +7,12 @@ if [ -z ${REPO_NAME+x} ]; then
     echo "exiting..."
     exit 1
 else
-cd /home/site/wwwroot & gh repo clone $REPO_NAME . -- --branch main
+    if [ -d "/home/site/wwwroot/.git" ]; then
+        echo "Git folder already exists, skipping clone"
+    else
+        echo "Git folder does not exist, cloning repo"
+        cd /home/site/wwwroot & gh repo clone $REPO_NAME . -- --branch $REPO_BRANCH
+    fi
 fi
 
 echo "Installing Laravel App..."
@@ -22,17 +27,35 @@ else
     cp /home/site/wwwroot/.env.example /home/site/wwwroot/.env
 fi
 
+
 echo "Generate Laravel key"
 php artisan key:generate
+if [ $? -ne 0 ]; then
+    echo "key:generate failed, exiting..."
+    exit 1
+fi
+
 
 echo "Migrate Laravel database"
-php artisan migrate
+php artisan migrate --force
+if [ $? -ne 0 ]; then
+    echo "migrate failed, exiting..."
+    exit 1
+fi
 
 echo "Update seeders"
-php artisan db:seed
+php artisan db:seed --force
+if [ $? -ne 0 ]; then
+    echo "db:seed failed, exiting..."
+    exit 1
+fi
 
 echo "Enable storage link"
 php artisan storage:link
+if [ $? -ne 0 ]; then
+    echo "storage:link failed, exiting..."
+    exit 1
+fi
 
 echo "Update Laravel storage permissions"
 chmod -R 777 /home/site/wwwroot/storage
