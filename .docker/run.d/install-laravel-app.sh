@@ -11,7 +11,7 @@ else
         echo "Git folder already exists, skipping clone"
     else
         echo "Git folder does not exist, cloning repo"
-        cd /home/site/wwwroot & gh repo clone $REPO_NAME . -- --branch main
+        cd /home/site/wwwroot & gh repo clone $REPO_NAME . -- --branch $REPO_BRANCH
     fi
 fi
 

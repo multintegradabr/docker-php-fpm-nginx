@@ -2,13 +2,9 @@
 
 exec > >(tee -i /home/site/LogFiles/post-merge.log) 2>&1
 
-remote_repo="origin"
-
-branch="main"
-
 cd /home/site/wwwroot
 
-git reset --hard $remote_repo/$branch
+git reset --hard $REPO_NAME/$REPO_BRANCH
 
 echo "Updating Laravel App..."
 composer install --no-dev --prefer-dist --optimize-autoloader
