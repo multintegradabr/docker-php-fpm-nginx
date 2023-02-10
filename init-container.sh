@@ -34,7 +34,8 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
         echo "run.d folder does not exist, creating one"
         mkdir -p /home/site/run.d
     fi
-    find /home/site/docker/run.d/* -type f -print0 | xargs -0 mv -t /home/site/run.d/  
+    find /home/site/docker/run.d/* -type f -print0 | xargs -0 mv -t /home/site/run.d/
+    rm -rf /home/site/docker/run.d  
 
     echo "Move custom scripts to init.d folder"
     if [ -d "/home/site/init.d" ]; then
@@ -44,6 +45,7 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
         mkdir -p /home/site/init.d
     fi
     find /home/site/docker/init.d/* -type f -print0 | xargs -0 mv -t /home/site/init.d/
+    rm -rf /home/site/docker/init.d
     
     echo "Link php opcache config file"
     ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
