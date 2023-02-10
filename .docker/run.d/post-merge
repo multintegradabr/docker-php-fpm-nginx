@@ -10,3 +10,8 @@ echo "Updating Laravel App..."
 composer install --no-dev --prefer-dist --optimize-autoloader
 php artisan migrate --force
 php artisan db:seed --force
+
+echo "Updating NPM Packages..."
+npm install -G npm
+npm install
+npm run production
