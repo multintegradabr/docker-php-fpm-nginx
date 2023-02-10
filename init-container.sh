@@ -26,7 +26,17 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
     rm -rf /home/site/docker
     mv -vf /var/www/docker /home/site/
-    
+
+    echo "Move custom scripts to run.d folder"
+    if [ -d "/home/site/run.d" ]; then
+        echo "run.d folder already exists"
+    else
+        echo "run.d folder does not exist, creating one"
+        mkdir -p /home/site/run.d
+    fi
+    find /home/site/docker/run.d/* -type f -print0 | xargs -0 mv -t /home/site/run.d/  
+
+    echo "Move custom scripts to init.d folder"
     if [ -d "/home/site/init.d" ]; then
         echo "init.d folder already exists"
     else
