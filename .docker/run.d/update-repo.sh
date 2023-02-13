@@ -18,11 +18,14 @@ if [ -d "/home/site/wwwroot/.git" ]; then
     echo "Repository updated successfully."
 
     echo "Updating Laravel App..."
+    
     echo "Updating composer packages..."
     composer install --no-dev --prefer-dist --optimize-autoloader
+
     echo "Updating database..."
     #php artisan migrate --force
     #echo "Database updated successfully."
+    
     #echo "Seeding database..."
     #php artisan db:seed --force
     #echo "Database seeded successfully."
