@@ -112,7 +112,7 @@ echo "Starting SSH server"
 /usr/sbin/sshd
 
 echo "Starting cron"
-crontab -l
+crond
  
 echo "Starting supervisord"
 supervisord -c /etc/supervisord.conf
