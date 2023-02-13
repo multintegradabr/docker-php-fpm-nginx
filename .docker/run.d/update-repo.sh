@@ -15,19 +15,30 @@ if [ $(git rev-parse HEAD) != $(git rev-parse origin/$REPO_BRANCH) ]; then
   echo "New updates found. Updating..."
   git merge origin/$REPO_BRANCH
   echo "Repository updated successfully."
-  echo "Restarting application..."
-  supervisorctl restart all
-  echo "Application restarted successfully."
 
   echo "Updating Laravel App..."
+  echo "Updating composer packages..."
   composer install --no-dev --prefer-dist --optimize-autoloader
+  echo "Updating database..."
   php artisan migrate --force
+  echo "Database updated successfully."
+  echo "Seeding database..."
   php artisan db:seed --force
+  echo "Database seeded successfully."
+
+  echo "Laravel App updated successfully."
 
   echo "Updating NPM Packages..."
   npm install -G npm
   npm install
   npm run production
+
+  echo "Restarting application..."
+  supervisorctl restart all
+  echo "Application restarted successfully."
+  
 else
   echo "No updates found."
 fi
+
+
