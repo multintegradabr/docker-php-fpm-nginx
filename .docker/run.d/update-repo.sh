@@ -20,11 +20,11 @@ if [ $(git rev-parse HEAD) != $(git rev-parse origin/$REPO_BRANCH) ]; then
   echo "Updating composer packages..."
   composer install --no-dev --prefer-dist --optimize-autoloader
   echo "Updating database..."
-  php artisan migrate --force
-  echo "Database updated successfully."
-  echo "Seeding database..."
-  php artisan db:seed --force
-  echo "Database seeded successfully."
+  #php artisan migrate --force
+  #echo "Database updated successfully."
+  #echo "Seeding database..."
+  #php artisan db:seed --force
+  #echo "Database seeded successfully."
 
   echo "Laravel App updated successfully."
 
