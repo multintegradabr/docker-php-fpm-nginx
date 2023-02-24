@@ -20,7 +20,7 @@ if [ -d "/home/site/wwwroot/.git" ]; then
     echo "Updating Laravel App..."
     
     echo "Updating composer packages..."
-    composer install --no-dev --prefer-dist --optimize-autoloader
+    composer install --no-dev
 
     echo "Updating database..."
     #php artisan migrate --force
