@@ -19,6 +19,10 @@ if [ -d "/home/site/wwwroot/.git" ]; then
 
     echo "Updating Laravel App..."
     
+    echo "Fixing folders permissions"
+    chmod 775 -R vendor/
+    chmod 775 -r storage/
+    
     echo "Updating composer packages..."
     composer install --no-dev
 
