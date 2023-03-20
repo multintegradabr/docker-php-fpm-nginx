@@ -14,7 +14,7 @@ if [ -d "/home/site/wwwroot/.git" ]; then
   echo "Checking for updates..."
     if [ $(git rev-parse HEAD) != $(git rev-parse origin/$REPO_BRANCH) ]; then
     echo "New updates found. Updating..."
-    git reset --hard HEAD
+    git restore .
     git pull origin $REPO_BRANCH
     echo "Repository updated successfully."
 
