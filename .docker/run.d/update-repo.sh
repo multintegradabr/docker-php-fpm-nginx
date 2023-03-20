@@ -14,7 +14,8 @@ if [ -d "/home/site/wwwroot/.git" ]; then
   echo "Checking for updates..."
     if [ $(git rev-parse HEAD) != $(git rev-parse origin/$REPO_BRANCH) ]; then
     echo "New updates found. Updating..."
-    git reset --hard origin/$REPO_BRANCH
+    git reset --hard HEAD
+    git pull origin $REPO_BRANCH
     echo "Repository updated successfully."
 
     echo "Updating Laravel App..."
@@ -24,7 +25,7 @@ if [ -d "/home/site/wwwroot/.git" ]; then
     chmod 777 -R storage/
     
     echo "Updating composer packages..."
-    composer install --no-dev
+    composer install
 
     echo "Updating database..."
     php artisan migrate --force
