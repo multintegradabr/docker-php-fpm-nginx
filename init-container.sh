@@ -85,6 +85,9 @@ crontab /home/site/docker/cron/crontab
 # Configure files for supervisor
 echo "link supervisor file"
 mkdir -p /etc/supervisor.d
+lv -sfn /home/site/docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+lv -sfn /home/site/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
+
 echo "Verifing if Laravel app is installed"
 if [ -f /home/site/wwwroot/artisan ]; then
     echo "Laravel app is already installed"
@@ -116,4 +119,4 @@ echo "Starting cron"
 service cron start
  
 echo "Starting supervisord"
-supervisord -c /etc/supervisord.conf
+supervisord -c /etc/supervisor/supervisord.conf

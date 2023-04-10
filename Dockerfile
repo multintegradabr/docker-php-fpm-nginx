@@ -32,7 +32,8 @@ RUN apt install -y \
   dialog \
   openrc \
   postgresql-client \
-  htop
+  htop \
+  cron
 
 # Install PHP Libs & Extensions
 RUN apt install -y \
@@ -98,4 +99,4 @@ RUN curl -LO https://github.com/DataDog/dd-trace-php/releases/latest/download/da
 #"Installing DataDog Setup Script"
 RUN php datadog-setup.php --php-bin=all --enable-appsec --enable-profiling
 
-ENTRYPOINT ["/bin/init_container.sh"]
+ENTRYPOINT ["php-fpm"]
