@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ "$AUTO_DEPLOY_ENABLE" != "true" ]; then
     echo "Auto Deploy is disabled. Skipping..."

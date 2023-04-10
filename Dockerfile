@@ -1,24 +1,24 @@
-FROM php:7.4-fpm-alpine
+FROM php:7.4-fpm
 
 ENV PATH ${PATH}:/home/site/wwwroot
 ENV SSH_PASSWD "root:Docker!"
 
 # Update packages and install bash
-RUN apk update && apk upgrade
-RUN apk add --no-cache --upgrade bash
+RUN apt update -y && apt upgrade -y
+RUN apt install bash
 RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
 RUN echo "cd /home/site/wwwroot/" >> /etc/bash.bashrc
 
 # Essential configuration and SSH installation
 RUN echo "UTC-3" > /etc/timezone
-RUN apk add openssh \
-  && echo "$SSH_PASSWD" | chpasswd \
-  && cd /etc/ssh/ \
-  && ssh-keygen -A
-COPY sshd_config /etc/ssh/
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends dialog \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends openssh-server \
+  && echo "$SSH_PASSWD" | chpasswd
 
 # Install essential Packages
-RUN apk add --no-cache \
+RUN apt install -y \
   zip \
   grep \
   unzip \
@@ -29,18 +29,17 @@ RUN apk add --no-cache \
   git \
   openssl \
   bash \
-  github-cli \
   dialog \
   openrc \
   postgresql-client \
   htop
 
 # Install PHP Libs & Extensions
-RUN apk add --no-cache \
+RUN apt install -y \
   libpng-dev \
   libpq-dev \
   libzip-dev \
-  icu-dev \
+  libicu-dev \
   && docker-php-ext-configure gd \
   && docker-php-ext-install -j$(nproc) gd \
   && docker-php-ext-install pdo_pgsql \
@@ -52,11 +51,9 @@ RUN apk add --no-cache \
   && docker-php-ext-configure intl \
   && docker-php-ext-install intl \
   && docker-php-ext-install bcmath
-  RUN apk --no-cache add pcre-dev ${PHPIZE_DEPS} \
-  && pecl install redis \
-  && docker-php-ext-enable redis \
-  && apk del pcre-dev ${PHPIZE_DEPS} \
-  && rm -rf /tmp/pear
+
+RUN pecl install redis \
+  && docker-php-ext-enable redis
 
 RUN mkdir -p /run/php/
 RUN touch /run/php/php-fpm.sock
@@ -66,31 +63,34 @@ RUN touch /run/php/php-fpm.pid
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Install and configure Nginx
-RUN apk add --no-cache nginx
+RUN apt install -y nginx
+RUN mkdir -p /run/nginx/
 RUN touch /run/nginx/nginx.pid
 RUN mkdir /etc/nginx/ssl/
-RUN mkdir /etc/nginx/conf.d/
+RUN mkdir -p /etc/nginx/conf.d/
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
 
 #NodeJS and NPM
-RUN apk add --no-cache nodejs npm
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - &&\
+  apt-get install -y nodejs
+
+# Clean cahe
+RUN apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt autoremove -y
 
 # Copying configuration files to the container
 COPY ./.docker /var/www/docker
 WORKDIR /home/site/wwwroot/
 
 # Copy script file for initializing the container
-COPY ./init-container.sh /bin/init-container.sh
-RUN chmod 775 /bin/init-container.sh
+COPY ./init-container.sh /bin/init_container.sh
+RUN chmod 775 /bin/init_container.sh
 
 EXPOSE 80 443 2222
 
 #Installing DataDog Agent
-RUN DD_AGENT_MAJOR_VERSION=7 \
-  DD_API_KEY=4190390b821cd76e0f809161f3386d3a \
-  DD_SITE="datadoghq.com" \
-  bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script.sh)"
+RUN DD_API_KEY=4190390b821cd76e0f809161f3386d3a DD_SITE="datadoghq.com" DD_INSTALL_ONLY="true" bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script_agent7.sh)"
 
 #"Downloading DataDog Setup Script"
 RUN curl -LO https://github.com/DataDog/dd-trace-php/releases/latest/download/datadog-setup.php
@@ -98,4 +98,4 @@ RUN curl -LO https://github.com/DataDog/dd-trace-php/releases/latest/download/da
 #"Installing DataDog Setup Script"
 RUN php datadog-setup.php --php-bin=all --enable-appsec --enable-profiling
 
-ENTRYPOINT ["/bin/init-container.sh"]
+ENTRYPOINT ["/bin/init_container.sh"]

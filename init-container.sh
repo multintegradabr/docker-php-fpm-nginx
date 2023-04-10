@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 # Remove old log files
 rm -rf /home/LogFiles/execContainer.log
@@ -68,6 +68,7 @@ fi
 
 # Configure files for nginx
 echo "Link nginx config files"
+mkdir -p /etc/nginx/http.d
 ln -sfn /home/site/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/http.d/default.conf
 
@@ -109,10 +110,10 @@ fi
 echo "Starting services..."
 
 echo "Starting SSH server"
-/usr/sbin/sshd
+service ssh start
 
 echo "Starting cron"
-crond
+service cron start
  
 echo "Starting supervisord"
 supervisord -c /etc/supervisord.conf
