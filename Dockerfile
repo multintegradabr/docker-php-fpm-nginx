@@ -86,16 +86,4 @@ RUN chmod 775 /bin/init-container.sh
 
 EXPOSE 80 443 2222
 
-#Installing DataDog Agent
-RUN DD_AGENT_MAJOR_VERSION=7 \
-  DD_API_KEY=4190390b821cd76e0f809161f3386d3a \
-  DD_SITE="datadoghq.com" \
-  bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script.sh)"
-
-#"Downloading DataDog Setup Script"
-RUN curl -LO https://github.com/DataDog/dd-trace-php/releases/latest/download/datadog-setup.php
-
-#"Installing DataDog Setup Script"
-RUN php datadog-setup.php --php-bin=all --enable-appsec --enable-profiling
-
 ENTRYPOINT ["/bin/init-container.sh"]
