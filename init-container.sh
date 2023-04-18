@@ -48,6 +48,7 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     rm -rf /home/site/docker/init.d
     
     echo "Link php opcache config file"
+    mkdir -p /usr/local/etc/php/conf.d
     ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
    
 else
@@ -68,13 +69,14 @@ fi
 
 # Configure files for nginx
 echo "Link nginx config files"
-mkdir -p /etc/nginx/http.d
 ln -sfn /home/site/docker/nginx/nginx.conf /etc/nginx/nginx.conf
-ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/http.d/default.conf
+ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/conf.d/default.conf
 
 # Configure files for php
 echo "Link php-fpm config files"
 rm /usr/local/etc/php-fpm.d/zz-docker.conf
+rm /usr/local/etc/php-fpm.d/www.conf.default
+mkdir -p /usr/local/etc/php/php-fpm.d
 ln -sfn /home/site/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
 ln -sfn /home/site/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
@@ -84,19 +86,16 @@ crontab /home/site/docker/cron/crontab
 
 # Configure files for supervisor
 echo "link supervisor file"
-mkdir -p /etc/supervisor.d
-lv -sfn /home/site/docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
-lv -sfn /home/site/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
 
 echo "Verifing if Laravel app is installed"
 if [ -f /home/site/wwwroot/artisan ]; then
     echo "Laravel app is already installed"
     echo "Configure Laravel workers in supervisor"
-    ln -sfn /home/site/docker/supervisor/laravel-workers.ini /etc/supervisor.d/laravel-workers.ini
+    ln -sfn /home/site/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
 else
     echo "Laravel app is not installed, laravel workers will not be configured"
 fi
-ln -sfn /home/site/docker/supervisor/supervisord.ini /etc/supervisor.d/supervisord.ini
+ln -sfn /home/site/docker/supervisor/php-nginx.conf /etc/supervisor/conf.d/php-nginx.conf
 
 # Execute custom scripts
 echo "Execute custom scripts"
