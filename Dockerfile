@@ -7,7 +7,7 @@ ENV SSH_PASSWD "root:Docker!"
 RUN apt update -y && apt upgrade -y
 RUN apt install bash
 RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
-RUN echo "cd /home/site/wwwroot/" >> /etc/bash.bashrc
+RUN echo "cd /home/site/wwwroot" >> /etc/bash.bashrc
 
 # Essential configuration and SSH installation
 RUN echo "UTC-3" > /etc/timezone
@@ -16,6 +16,7 @@ RUN apt update \
   && apt update \
   && apt install -y --no-install-recommends openssh-server \
   && echo "$SSH_PASSWD" | chpasswd
+COPY sshd_config /etc/ssh/
 
 # Install essential Packages
 RUN apt install -y \
