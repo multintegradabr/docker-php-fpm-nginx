@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /home/site/wwwroot
+
 echo "Installing Datadog Agent"
 export DD_HOSTNAME=$WEBSITE_SITE_NAME
 DD_API_KEY=4190390b821cd76e0f809161f3386d3a DD_SITE="datadoghq.com" DD_INSTALL_ONLY=true bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script_agent7.sh)"
