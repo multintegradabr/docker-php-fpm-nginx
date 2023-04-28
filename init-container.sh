@@ -1,8 +1,10 @@
 #!/bin/bash
 
 # Remove old log files
-rm -rf /home/LogFiles/execContainer.log
-rm -rf /home/LogFiles/cron.log
+rm -rf /home/LogFiles/Scheduler.log
+rm -rf /home/LogFiles/Updates.log
+rm -rf /home/LogFiles/RenewSSL.log
+rm -rf /home/LogFiles/UpdateRepo.log
 
 cat >/etc/motd <<EOL 
  ___ ___  __ __  _     ______  ____  ____   ______    ___   ____  ____    ____  ___     ____ 
