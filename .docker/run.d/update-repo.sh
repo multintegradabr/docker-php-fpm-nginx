@@ -21,15 +21,15 @@ if [ -d "/home/site/wwwroot/.git" ]; then
     echo "Updating Laravel App..."
     
     echo "Fixing folders permissions"
-    chmod 777 -R vendor/
-    chmod 777 -R storage/
+    chmod -R 777 -R vendor
+    chmod -R 777 storage bootstrap/cache
     
     echo "Updating composer packages..."
     composer install
 
-    echo "Updating database..."
-    php artisan migrate --force
-    echo "Database updated successfully."
+    #echo "Updating database..."
+    #php artisan migrate --force
+    #echo "Database updated successfully."
     
     #echo "Seeding database..."
     #php artisan db:seed --force

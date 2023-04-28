@@ -1,6 +1,6 @@
 # Laravel Scheduler
 * * * * * cd /home/site/wwwroot && php artisan schedule:run >> /home/LogFiles/cron.log 2>&1
-0 0 * * 0 apt update >> /home/LogFiles/cron.log 2>&1
+0 0 * * 0 apt autoremove && apt autoclean >> /home/LogFiles/cron.log 2>&1
 30 0 * * * /usr/bin/composer self-update >> /home/LogFiles/cron.log 2>&1
 # Update SSL Certificates for nginx
 00 20 * * 1 /home/site/run.d/update-ssl-cert.sh >> /home/LogFiles/cron.log 2>&1
