@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "$AUTO_DEPLOY_ENABLE" = "true" ]; then
+if [ "$AUTO_DEPLOY_ENABLE" = true ]; then
 
 cd /home/site/wwwroot
 
