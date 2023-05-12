@@ -1,9 +1,6 @@
 #!/bin/bash
 
-if [ "$AUTO_DEPLOY_ENABLE" != "true" ]; then
-    echo "Auto Deploy is disabled. Skipping..."
-    exit 0
-fi
+if [ "$AUTO_DEPLOY_ENABLE" = "true" ]; then
 
 cd /home/site/wwwroot
 
@@ -53,3 +50,9 @@ else
   echo "Git folder does not exist, exiting"
   exit 0
 fi
+
+else
+  echo "Auto deploy is disabled, exiting"
+  exit 0
+fi
+```
