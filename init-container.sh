@@ -29,7 +29,7 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     
     echo "Linking /wwroot in container"
     rm -rf /var/www/html
-    ln -sfn /home/site/wwwroot /var/www
+    ln -sfn /home/site/wwwroot /var/www/app
 
     echo "Move custom scripts to docker folder"
     rm -rf /home/site/docker

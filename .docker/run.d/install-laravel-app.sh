@@ -7,24 +7,24 @@ if [ -z ${REPO_NAME+x} ]; then
     echo "exiting..."
     exit 1
 else
-    if [ -d "/var/wwwroot/.git" ]; then
+    if [ -d "/var/www/app/.git" ]; then
         echo "Git folder already exists, skipping clone"
     else
         echo "Git folder does not exist, cloning repo"
-        cd /var/wwwroot & gh repo clone $REPO_NAME . -- --branch $REPO_BRANCH
+        cd /var/www/app & gh repo clone $REPO_NAME . -- --branch $REPO_BRANCH
     fi
 fi
 
 echo "Installing Laravel App..."
 
 echo "Install Laravel dependencies"
-cd /var/wwwroot & composer install --no-dev --prefer-dist --optimize-autoloader
+cd /var/www/app & composer install --no-dev --prefer-dist --optimize-autoloader
 
-if [ -f /home/site/wwwroot/.env ]; then
+if [ -f /var/www/app/.env ]; then
     echo "Laravel .env file already exists"
 else
     echo "Laravel .env file does not exist, creating one"
-    cp /var/wwwroot/.env.example /var/wwwroot/.env
+    cp /var/www/app/.env.example /var/www/app/.env
 fi
 
 
@@ -58,10 +58,10 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Update Laravel storage permissions"
-chmod -R 777 /var/wwwroot/storage
+chmod -R 777 /var/www/app/storage
 
 echo "Update Laravel bootstrap/cache permissions"
-chmod -R 777 /var/wwwroot/bootstrap/cache
+chmod -R 777 /var/www/app/bootstrap/cache
 
 echo "Install npm dependencies"
 npm install -g npm

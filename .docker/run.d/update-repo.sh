@@ -2,9 +2,9 @@
 
 if [ "$AUTO_DEPLOY_ENABLE" = true ]; then
 
-cd /var/wwwroot
+cd /var/www/app
 
-if [ -d "/var/wwwroot/.git" ]; then
+if [ -d "/var/www/app/.git" ]; then
   echo "Fetching updates from remote repository..."
   git fetch origin
 
