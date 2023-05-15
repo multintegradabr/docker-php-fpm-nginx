@@ -26,6 +26,12 @@ eval $(printenv | sed -n "s/^\([^=]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/
 # Configure files for Azure App Service
 if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
+    
+    echo "Linking /wwroot in container"
+    rm -rf /var/www/html
+    ln -sfn /home/site/wwwroot /var/www
+
+    echo "Move custom scripts to docker folder"
     rm -rf /home/site/docker
     mv -vf /var/www/docker /home/site/
 
