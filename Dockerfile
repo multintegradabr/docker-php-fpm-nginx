@@ -1,4 +1,4 @@
-FROM php:7.4-fpm
+FROM php:8.1-fpm
 
 ENV PATH ${PATH}:/home/site/wwwroot
 ENV SSH_PASSWD "root:Docker!"
@@ -61,8 +61,7 @@ RUN pecl install redis \
 RUN mkdir -p /run/php/
 RUN touch /run/php/php-fpm.sock
 RUN touch /run/php/php-fpm.pid
-#RUN chmod 766 -R /run/php/php-fpm.sock
-#RUN chown www-data:www-data /run/php/php-fpm.sock
+
 
 # Download Composer Files
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -79,10 +78,6 @@ RUN mkdir /etc/nginx/ssl/
 
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
-
-#NodeJS and NPM
-RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - &&\
-  apt-get install -y nodejs
 
 # Clean cahe
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
