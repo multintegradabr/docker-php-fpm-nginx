@@ -79,9 +79,9 @@ if [ -f /home/site/wwwroot/artisan ]; then
     ln -sfn /home/site/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
 
     echo "Configure Unit for Laravel"
-    unitd --no-daemon
+    unitd --no-daemon --control unix:/var/run/control.unit.sock &
     curl -X PUT --data-binary @/home/site/docker/unit/config.json --unix-socket \
-       /var/run/control.unit.sock http://localhost/config/ &&
+       /var/run/control.unit.sock http://localhost/config/ &
     pkill unitd
 else
     echo "Laravel app is not installed, laravel workers will not be configured and Unit will not be configured"
