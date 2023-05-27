@@ -73,7 +73,7 @@ crontab /home/site/docker/cron/crontab
 echo "link supervisor files"
 
 echo "Verifing if Laravel app is installed"
-if [ -f /home/site/wwwroot/public/index.php ]; then
+if [ -f /home/site/wwwroot/artisan ]; then
     echo "Laravel app is already installed"
     echo "Configure Laravel workers in supervisor"
     ln -sfn /home/site/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
