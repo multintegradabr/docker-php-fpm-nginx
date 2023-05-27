@@ -79,6 +79,13 @@ if [ -f /home/site/wwwroot/artisan ]; then
     ln -sfn /home/site/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
 else
     echo "Laravel app is not installed, laravel workers will not be configured"
+    echo "Creating index.php file if not exists for unit http server"
+    if [ -f /home/site/wwwroot/public/index.php ]; then
+        echo "index.php file already exists"
+    else
+        echo "index.php file does not exist, creating one"
+        echo "<?php phpinfo(); ?>" > /home/site/wwwroot/public/index.php
+    fi
     echo "Install Laravel app using /home/site/docker/run.d/install-laravel-app.sh"
 fi
 ln -sfn /home/site/docker/supervisor/unit.conf /etc/supervisor/conf.d/unit.conf
@@ -101,6 +108,14 @@ echo "Starting cron..."
 service cron start
 
 echo "Configuring Unit Http Server..."
+echo "Creating index.php file if not exists"
+if [ -f /home/site/wwwroot/public/index.php ]; then
+    echo "index.php file already exists"
+else
+    echo "index.php file does not exist, creating one"
+    echo "<?php phpinfo(); ?>" > /home/site/wwwroot/public/index.php
+fi
+
 unitd --no-daemon --control unix:/var/run/control.unit.sock &
 sleep 3
 curl -X PUT --data-binary @/home/site/docker/unit/config.json --unix-socket \
