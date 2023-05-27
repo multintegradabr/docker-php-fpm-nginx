@@ -15,6 +15,12 @@ else
     fi
 fi
 
+echo "Configuring Unit and starting it..."
+unitd --no-daemom --control unix:/var/run/control.unit.sock
+curl -X PUT --data-binary @/home/site/docker/unit/config.json --unix-socket \
+     /var/run/control.unit.sock http://localhost/config/
+pkill unitd
+
 echo "Installing Laravel App..."
 
 echo "Install Laravel dependencies"
@@ -34,7 +40,6 @@ if [ $? -ne 0 ]; then
     echo "key:generate failed, exiting..."
     exit 1
 fi
-
 
 echo "Migrate Laravel database"
 php artisan migrate --force
@@ -70,7 +75,7 @@ if [ $? -ne 0 ]; then
     echo "npm install failed, exiting..."
     exit 1
 fi
-echo "Build npm assets"
+echo "Run npm "
 npm run dev
 
 supervisorctl restart all

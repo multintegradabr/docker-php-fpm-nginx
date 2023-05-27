@@ -1,15 +1,15 @@
-FROM php:8.1-fpm
+FROM unit:php8.2
 
 ENV PATH ${PATH}:/home/site/wwwroot
 ENV SSH_PASSWD "root:Docker!"
 
-# Update packages and install bash
+# Atualizar os pacotes e instala o bash
 RUN apt update -y && apt upgrade -y
 RUN apt install bash
 RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
 RUN echo "cd /home/site/wwwroot" >> /etc/bash.bashrc
 
-# Essential configuration and SSH installation
+# Configura o SSH para o Azure App Service
 RUN echo "UTC-3" > /etc/timezone
 RUN apt update \
   && apt install -y --no-install-recommends dialog \
@@ -25,18 +25,16 @@ RUN apt install -y \
   unzip \
   curl \
   nano \
-  sudo \
   wget \
-  supervisor \
   git \
   openssl \
-  bash \
-  dialog \
+  procps \
   postgresql-client \
-  htop \
-  cron
+  cron \
+  supervisor \
+  htop
 
-# Install PHP Libs & Extensions
+# Instala extensões do PHP para o Laravel
 RUN apt update -y && apt install -y \
   libpng-dev \
   libpq-dev \
@@ -58,26 +56,12 @@ RUN apt update -y && apt install -y \
 RUN pecl install redis \
   && docker-php-ext-enable redis
 
-RUN mkdir -p /run/php/
-RUN touch /run/php/php-fpm.sock
-RUN touch /run/php/php-fpm.pid
-
-
 # Download Composer Files
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+#COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Install and configure Nginx
-RUN echo "deb http://nginx.org/packages/mainline/debian/ bullseye nginx" > /etc/apt/sources.list.d/nginx.list
-RUN wget http://nginx.org/keys/nginx_signing.key
-RUN apt-key add nginx_signing.key
-RUN apt update -y && apt install nginx -y
-
-RUN mkdir -p /run/nginx/
-RUN touch /run/nginx/nginx.pid
-RUN mkdir /etc/nginx/ssl/
-
-RUN ln -sf /dev/stdout /var/log/nginx/access.log
-RUN ln -sf /dev/stderr /var/log/nginx/error.log
+#NodeJS and NPM
+RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - &&\
+  apt-get install -y nodejs
 
 # Clean cahe
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
@@ -87,10 +71,11 @@ RUN apt autoremove -y
 COPY ./.docker /var/www/docker
 WORKDIR /home/site/wwwroot/
 
+
 # Copy script file for initializing the container
 COPY ./init-container.sh /bin/init_container.sh
 RUN chmod 775 /bin/init_container.sh
 
-EXPOSE 80 443 2222
+EXPOSE 80
 
 ENTRYPOINT ["/bin/init_container.sh"]

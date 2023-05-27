@@ -1,0 +1,27 @@
+{
+  "listeners": {
+    "*:80": {
+      "pass": "routes"
+    }
+  },
+  "routes": [
+    {
+      "match": {
+        "uri": "!/index.php"
+      },
+      "action": {
+        "share": "/home/site/wwwroot/public$uri",
+        "fallback": {
+          "pass": "applications/laravel-app"
+        }
+      }
+    }
+  ],
+  "applications": {
+    "laravel-app": {
+      "type": "php",
+      "root": "/home/site/wwwroot/public/",
+      "script": "index.php"
+    }
+  }
+}

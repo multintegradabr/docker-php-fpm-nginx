@@ -19,19 +19,10 @@ PHP version : `php -v | head -n 1 | cut -d ' ' -f 2`
 EOL
 cat /etc/motd
 
-# Get environment variables to show up in SSH session
 eval $(printenv | sed -n "s/^\([^=]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/g' | sed '/=/s//="/' | sed 's/$/"/' >> /etc/profile)
 
-
-# Configure files for Azure App Service
 if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
-    
-    echo "Linking /wwroot in container"
-    rm -rf /var/www/html
-    ln -sfn /home/site/wwwroot /var/www/app
-
-    echo "Move custom scripts to docker folder"
     rm -rf /home/site/docker
     mv -vf /var/www/docker /home/site/
 
@@ -56,8 +47,7 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     rm -rf /home/site/docker/init.d
     
     echo "Link php opcache config file"
-    mkdir -p /usr/local/etc/php/conf.d
-    ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
+    ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/docker-php-ext-opcache.ini
    
 else
     echo "Running on local"
@@ -65,7 +55,6 @@ else
     mv -vf /var/www/docker /home/site/
 fi
 
-# Configure Git credentials
 echo "Verifing if Git token are set"
 if [ -z ${GH_TOKEN+x}]; then
     echo "GH_TOKEN not seted"
@@ -75,37 +64,31 @@ else
 git config --global --add safe.directory /home/site/wwwroot
 fi
 
-# Configure files for nginx
-echo "Link nginx config files"
-ln -sfn /home/site/docker/nginx/nginx.conf /etc/nginx/nginx.conf
-ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/conf.d/default.conf
-
-# Configure files for php
 echo "Link php-fpm config files"
-rm /usr/local/etc/php-fpm.d/zz-docker.conf
-rm /usr/local/etc/php-fpm.d/www.conf.default
-mkdir -p /usr/local/etc/php/php-fpm.d
 ln -sfn /home/site/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
-ln -sfn /home/site/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 
-# Configure files for cron
 echo "Add jobs on crontab"
 crontab /home/site/docker/cron/crontab
 
-# Configure files for supervisor
-echo "link supervisor file"
+echo "link supervisor files"
 
 echo "Verifing if Laravel app is installed"
 if [ -f /home/site/wwwroot/artisan ]; then
     echo "Laravel app is already installed"
     echo "Configure Laravel workers in supervisor"
     ln -sfn /home/site/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
-else
-    echo "Laravel app is not installed, laravel workers will not be configured"
-fi
-ln -sfn /home/site/docker/supervisor/php-nginx.conf /etc/supervisor/conf.d/php-nginx.conf
 
-# Execute custom scripts
+    echo "Configure Unit for Laravel"
+    unitd --no-daemon
+    curl -X PUT --data-binary @/home/site/docker/unit/config.json --unix-socket \
+       /var/run/control.unit.sock http://localhost/config/ &&
+    pkill unitd
+else
+    echo "Laravel app is not installed, laravel workers will not be configured and Unit will not be configured"
+    echo "Install Laravel app using /home/site/docker/run.d/install-laravel-app.sh"
+fi
+ln -sfn /home/site/docker/supervisor/unit.conf /etc/supervisor/conf.d/unit.conf
+
 echo "Execute custom scripts"
 if [ -d "/home/site/init.d" ]; then
     echo "Custom scripts found"
@@ -117,13 +100,11 @@ else
     echo "Custom scripts not found"
 fi
 
-echo "Starting services..."
-
-echo "Starting SSH server"
+echo "Starting SSH..."
 service ssh start
 
-echo "Starting cron"
+echo "Starting cron..."
 service cron start
- 
-echo "Starting supervisord"
+
+echo "Starting supervisord..."
 supervisord -c /etc/supervisor/supervisord.conf
