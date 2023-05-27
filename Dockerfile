@@ -68,6 +68,7 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN apt autoremove -y
 
 # Copying configuration files to the container
+COPY ./index.php /home/site/wwwroot/public/index.php
 COPY ./.docker /var/www/docker
 WORKDIR /home/site/wwwroot/
 

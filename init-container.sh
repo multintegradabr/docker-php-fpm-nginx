@@ -73,18 +73,12 @@ crontab /home/site/docker/cron/crontab
 echo "link supervisor files"
 
 echo "Verifing if Laravel app is installed"
-if [ -f /home/site/wwwroot/artisan ]; then
+if [ -f /home/site/wwwroot/public/index.php ]; then
     echo "Laravel app is already installed"
     echo "Configure Laravel workers in supervisor"
     ln -sfn /home/site/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
-
-    echo "Configure Unit for Laravel"
-    unitd --no-daemon --control unix:/var/run/control.unit.sock &
-    curl -X PUT --data-binary @/home/site/docker/unit/config.json --unix-socket \
-       /var/run/control.unit.sock http://localhost/config/ &
-    pkill unitd
 else
-    echo "Laravel app is not installed, laravel workers will not be configured and Unit will not be configured"
+    echo "Laravel app is not installed, laravel workers will not be configured"
     echo "Install Laravel app using /home/site/docker/run.d/install-laravel-app.sh"
 fi
 ln -sfn /home/site/docker/supervisor/unit.conf /etc/supervisor/conf.d/unit.conf
@@ -105,6 +99,14 @@ service ssh start
 
 echo "Starting cron..."
 service cron start
+
+echo "Configuring Unit Http Server..."
+unitd --no-daemon --control unix:/var/run/control.unit.sock &
+sleep 3
+curl -X PUT --data-binary @/home/site/docker/unit/config.json --unix-socket \
+    /var/run/control.unit.sock http://localhost/config/ &
+sleep 2
+pkill unitd
 
 echo "Starting supervisord..."
 supervisord -c /etc/supervisor/supervisord.conf

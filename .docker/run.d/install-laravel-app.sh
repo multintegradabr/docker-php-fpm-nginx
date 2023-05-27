@@ -15,12 +15,6 @@ else
     fi
 fi
 
-echo "Configuring Unit and starting it..."
-unitd --no-daemom --control unix:/var/run/control.unit.sock
-curl -X PUT --data-binary @/home/site/docker/unit/config.json --unix-socket \
-     /var/run/control.unit.sock http://localhost/config/
-pkill unitd
-
 echo "Installing Laravel App..."
 
 echo "Install Laravel dependencies"
@@ -32,7 +26,6 @@ else
     echo "Laravel .env file does not exist, creating one"
     cp /var/www/app/.env.example /var/www/app/.env
 fi
-
 
 echo "Generate Laravel key"
 php artisan key:generate
