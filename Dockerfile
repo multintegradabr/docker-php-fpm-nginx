@@ -93,9 +93,9 @@ COPY ./.docker /var/www/docker
 WORKDIR /home/site/wwwroot/
 
 # Copy script file for initializing the container
-COPY ./init-container.sh /bin/init_container.sh
-RUN chmod 775 /bin/init_container.sh
+COPY ./entrypoint.sh /bin/entrypoint.sh
+RUN chmod 775 /bin/entrypoint.sh
 
 EXPOSE 80 443 2222
 
-ENTRYPOINT ["/bin/init_container.sh"]
+ENTRYPOINT ["/bin/entrypoint.sh"]

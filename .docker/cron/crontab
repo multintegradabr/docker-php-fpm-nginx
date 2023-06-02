@@ -1,9 +1,7 @@
 # Laravel Scheduler
-* * * * * cd /var/www/app && /usr/local/bin/php artisan schedule:run >> /home/LogFiles/Laravel-Scheduler.log 2>&1
+* * * * * cd /home/site/wwwroot && /usr/local/bin/php artisan schedule:run >> /home/LogFiles/Laravel-Scheduler.log 2>&1
 0 0 * * 0 apt autoremove && apt autoclean >> /home/LogFiles/OS-Updates.log 2>&1
 30 0 * * * /usr/bin/composer self-update >> /home/LogFiles/Composer-Updates.log 2>&1
 # Update SSL Certificates for nginx
 00 20 * * 1 /home/site/run.d/update-ssl-cert.sh >> /home/LogFiles/RenewSSL.log 2>&1
-# Search for new updates in remote repository and update local repository
-* * * * * /home/site/run.d/update-repo.sh >> /home/LogFiles/UpdateRepo.log 2>&1
 #

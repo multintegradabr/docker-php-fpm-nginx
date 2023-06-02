@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Remove old log files
-rm -rf /home/LogFiles/Scheduler.log
-rm -rf /home/LogFiles/Updates.log
+rm -rf /home/LogFiles/Laravel-Scheduler.log
+rm -rf /home/LogFiles/Composer-Updates.log
+rm -rf /home/LogFiles/OS-Updates.log
 rm -rf /home/LogFiles/RenewSSL.log
-rm -rf /home/LogFiles/UpdateRepo.log
 
 cat >/etc/motd <<EOL 
  ___ ___  __ __  _     ______  ____  ____   ______    ___   ____  ____    ____  ___     ____ 
@@ -26,10 +26,6 @@ eval $(printenv | sed -n "s/^\([^=]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/
 # Configure files for Azure App Service
 if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
-    
-    echo "Linking /wwroot in container"
-    rm -rf /var/www/html
-    ln -sfn /home/site/wwwroot /var/www/app
 
     echo "Move custom scripts to docker folder"
     rm -rf /home/site/docker
