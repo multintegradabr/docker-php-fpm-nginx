@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd /home/site/wwwroot
+cd /var/www
 
 echo "Installing Datadog Agent"
 export DD_HOSTNAME=$WEBSITE_SITE_NAME

@@ -1,13 +1,13 @@
 FROM php:7.4-fpm
 
-ENV PATH ${PATH}:/home/site/wwwroot
+ENV PATH ${PATH}:/var/www
 ENV SSH_PASSWD "root:Docker!"
 
 # Update packages and install bash
 RUN apt update -y && apt upgrade -y
 RUN apt install bash
 RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
-RUN echo "cd /home/site/wwwroot" >> /etc/bash.bashrc
+RUN echo "cd /var/www" >> /etc/bash.bashrc
 
 # Essential configuration and SSH installation
 RUN echo "UTC-3" > /etc/timezone
@@ -89,8 +89,8 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN apt autoremove -y
 
 # Copying configuration files to the container
-COPY ./.docker /var/www/docker
-WORKDIR /home/site/wwwroot/
+COPY ./.docker /home/site/docker
+WORKDIR /var/www/
 
 # Copy script file for initializing the container
 COPY ./entrypoint.sh /bin/entrypoint.sh
