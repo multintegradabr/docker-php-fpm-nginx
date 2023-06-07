@@ -52,7 +52,7 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
    
 else
     echo "Running on local"
-    mkdir -p /home/site/wwwroot
+    mkdir -p /var/www
     mv -vf /var/www/docker /home/site/
 fi
 
@@ -63,7 +63,7 @@ if [ -z ${GH_TOKEN+x}]; then
 else
     echo "Update Git credentials"
     cd /home/site & gh auth setup-git
-git config --global --add safe.directory /home/site/wwwroot
+git config --global --add safe.directory /var/www
 fi
 
 # Configure files for nginx
@@ -85,7 +85,7 @@ crontab /home/site/docker/cron/crontab
 echo "link supervisor file"
 mkdir -p /etc/supervisor.d
 echo "Verifing if Laravel app is installed"
-if [ -f /home/site/wwwroot/artisan ]; then
+if [ -f /var/www/artisan ]; then
     echo "Laravel app is already installed"
     echo "Configure Laravel workers in supervisor"
     ln -sfn /home/site/docker/supervisor/laravel-workers.ini /etc/supervisor.d/laravel-workers.ini

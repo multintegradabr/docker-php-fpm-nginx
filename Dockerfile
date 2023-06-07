@@ -1,13 +1,13 @@
 FROM php:7.4-fpm-alpine
 
-ENV PATH ${PATH}:/home/site/wwwroot
+ENV PATH ${PATH}:/var/www
 ENV SSH_PASSWD "root:Docker!"
 
 # Update packages and install bash
 RUN apk update && apk upgrade
 RUN apk add --no-cache --upgrade bash
 RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
-RUN echo "cd /home/site/wwwroot/" >> /etc/bash.bashrc
+RUN echo "cd /var/www/" >> /etc/bash.bashrc
 
 # Essential configuration and SSH installation
 RUN echo "UTC-3" > /etc/timezone
@@ -78,12 +78,12 @@ RUN apk add --no-cache nodejs npm
 
 # Copying configuration files to the container
 COPY ./.docker /var/www/docker
-WORKDIR /home/site/wwwroot/
+WORKDIR /var/www/
 
 # Copy script file for initializing the container
-COPY ./init-container.sh /bin/init-container.sh
-RUN chmod 775 /bin/init-container.sh
+COPY ./entrypoint.sh /bin/entrypoint.sh
+RUN chmod 775 /bin/entrypoint.sh
 
 EXPOSE 80 443 2222
 
-ENTRYPOINT ["/bin/init-container.sh"]
+ENTRYPOINT ["/bin/entrypoint.sh"]
