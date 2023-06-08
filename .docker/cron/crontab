@@ -1,7 +1,7 @@
 # Laravel Scheduler
-* * * * * cd /var/www && php artisan schedule:run >> /home/LogFiles/cron.log 2>&1
-0 0 * * 0 apk update >> /home/LogFiles/cron.log 2>&1
-30 0 * * * /usr/bin/composer self-update >> /home/LogFiles/cron.log 2>&1
+* * * * * cd /var/www && php artisan schedule:run >> /home/LogFiles/Laravel-Scheduler.log 2>&1
+0 0 * * 0 apk update >> /home/LogFiles/OS-Updates.log 2>&1
+30 0 * * * /usr/bin/composer self-update >> /home/LogFiles/Composer-Updates.log 2>&1
 # Update SSL Certificates for nginx
-00 20 * * 1 /home/site/run.d/update-ssl-cert.sh >> /home/LogFiles/cron.log 2>&1
+00 20 * * 1 /home/site/run.d/update-ssl-cert.sh >> /home/LogFiles/RenewSSL.log 2>&1
 #

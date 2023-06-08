@@ -1,8 +1,10 @@
 #!/bin/sh
 
 # Remove old log files
-rm -rf /home/LogFiles/execContainer.log
-rm -rf /home/LogFiles/cron.log
+rm -rf /home/LogFiles/Laravel-Scheduler.log
+rm -rf /home/LogFiles/Composer-Updates.log
+rm -rf /home/LogFiles/OS-Updates.log
+rm -rf /home/LogFiles/RenewSSL.log
 
 cat >/etc/motd <<EOL 
  ___ ___  __ __  _     ______  ____  ____   ______    ___   ____  ____    ____  ___     ____ 
@@ -52,7 +54,8 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
    
 else
     echo "Running on local"
-    mkdir -p /var/www
+    mkdir -p /home/site
+    mkdir -p /home/site/LogFiles
     mv -vf /var/www/docker /home/site/
 fi
 

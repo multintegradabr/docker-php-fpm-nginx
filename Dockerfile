@@ -52,7 +52,7 @@ RUN apk add --no-cache \
   && docker-php-ext-configure intl \
   && docker-php-ext-install intl \
   && docker-php-ext-install bcmath
-  RUN apk --no-cache add pcre-dev ${PHPIZE_DEPS} \
+RUN apk --no-cache add pcre-dev ${PHPIZE_DEPS} \
   && pecl install redis \
   && docker-php-ext-enable redis \
   && apk del pcre-dev ${PHPIZE_DEPS} \
@@ -72,6 +72,8 @@ RUN mkdir /etc/nginx/ssl/
 RUN mkdir /etc/nginx/conf.d/
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
+RUN rm -rf /var/www/localhost/ 
+RUN rm -rf /var/www/html/
 
 #NodeJS and NPM
 RUN apk add --no-cache nodejs npm
