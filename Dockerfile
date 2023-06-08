@@ -33,7 +33,8 @@ RUN apk add --no-cache \
   dialog \
   openrc \
   postgresql-client \
-  htop
+  htop \
+  sudo 
 
 # Install PHP Libs & Extensions
 RUN apk add --no-cache \
