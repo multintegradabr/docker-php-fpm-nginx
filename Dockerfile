@@ -64,27 +64,14 @@ RUN apt update -y && apt install -y \
 RUN pecl install redis \
   && docker-php-ext-enable redis
 
-RUN mkdir -p /run/php/
-RUN touch /run/php/php-fpm.sock
-RUN touch /run/php/php-fpm.pid
-#RUN chmod 766 -R /run/php/php-fpm.sock
-#RUN chown www-data:www-data /run/php/php-fpm.sock
-
-# Download Composer Files
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
 # Install and configure Nginx
 RUN echo "deb http://nginx.org/packages/mainline/debian/ bullseye nginx" > /etc/apt/sources.list.d/nginx.list
 RUN wget http://nginx.org/keys/nginx_signing.key
 RUN apt-key add nginx_signing.key
 RUN apt update -y && apt install nginx -y
 
-RUN mkdir -p /run/nginx/
-RUN touch /run/nginx/nginx.pid
-RUN mkdir /etc/nginx/ssl/
-
-RUN ln -sf /dev/stdout /var/log/nginx/access.log
-RUN ln -sf /dev/stderr /var/log/nginx/error.log
+# Download Composer Files
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 #NodeJS and NPM
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - &&\
@@ -94,13 +81,34 @@ RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - &&\
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN apt autoremove -y
 
-# Copying configuration files to the container
-COPY ./.docker /var/www/docker
-WORKDIR /var/www/
-
 # Copy script file for initializing the container
 COPY ./entrypoint.sh /bin/entrypoint.sh
 RUN chmod 775 /bin/entrypoint.sh
+
+#change permissions for www-data
+RUN usermod -u 1000 www-data
+RUN groupmod -g 1000 www-data
+
+# Copying configuration files to the container
+RUN mkdir -p /run/php/
+RUN chown -R www-data:www-data /run/php/
+RUN touch /run/php/php-fpm.sock
+RUN chown -R www-data:www-data /run/php/php-fpm.sock
+RUN touch /run/php/php-fpm.pid
+RUN chown -R www-data:www-data /run/php/php-fpm.pid
+RUN mkdir -p /run/nginx/
+RUN chown -R www-data:www-data /run/nginx/
+RUN touch /run/nginx/nginx.pid
+RUN chown -R www-data:www-data /run/nginx/nginx.pid
+RUN mkdir /etc/nginx/ssl/
+RUN chown -R www-data:www-data /etc/nginx/ssl/
+RUN ln -sf /dev/stdout /var/log/nginx/access.log
+RUN chown -R www-data:www-data /var/log/nginx/access.log
+RUN ln -sf /dev/stderr /var/log/nginx/error.log
+RUN chown -R www-data:www-data /var/log/nginx/error.log
+
+COPY ./.docker /var/www/docker
+WORKDIR /var/www/
 
 EXPOSE 80 443 2222
 
