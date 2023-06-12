@@ -80,7 +80,7 @@ RUN rm -rf /var/www/html/
 RUN apk add --no-cache nodejs npm
 
 # Copying configuration files to the container
-COPY ./.docker /var/www/docker
+COPY ./.docker /tmp/docker
 WORKDIR /var/www/
 
 # Copy script file for initializing the container

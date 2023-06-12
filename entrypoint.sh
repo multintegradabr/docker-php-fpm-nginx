@@ -27,7 +27,7 @@ eval $(printenv | sed -n "s/^\([^=]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/
 if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
     rm -rf /home/site/docker
-    mv -vf /var/www/docker /home/site/
+    mv -vf /tmp/docker /home/site/
 
     echo "Move custom scripts to run.d folder"
     if [ -d "/home/site/run.d" ]; then
@@ -54,9 +54,9 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
    
 else
     echo "Running on local"
-    mkdir -p /home/site/docker
+    mkdir -p /home/site
     mkdir -p /home/site/LogFiles
-    cp -vf /var/www/docker /home/site/
+    mv -vf /tmp/docker /home/site/
 fi
 
 # Configure Git credentials
