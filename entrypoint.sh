@@ -54,9 +54,9 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
    
 else
     echo "Running on local"
-    mkdir -p /home/site
+    mkdir -p /home/site/docker
     mkdir -p /home/site/LogFiles
-    mv -vf /var/www/docker /home/site/
+    cp -vf /var/www/docker /home/site/
 fi
 
 # Configure Git credentials
