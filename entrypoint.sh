@@ -54,7 +54,6 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
    
 else
     echo "Running on local"
-    mkdir -p /home/site
     mkdir -p /home/site/LogFiles
     mv -vf /tmp/docker /home/site/
 fi
