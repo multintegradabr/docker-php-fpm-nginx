@@ -1,5 +1,7 @@
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
 # Laravel Scheduler
-* * * * * cd /var/www && /usr/local/bin/php artisan schedule:run >> /home/LogFiles/Laravel-Scheduler.log 2>&1
+* * * * * if [[ -e "/etc/environment" ]]; then . /etc/environment && php /var/www/artisan schedule:run >> /home/LogFiles/Laravel-Scheduler.log 2>&1; else php /var/www/artisan schedule:run >> /home/LogFiles/Laravel-Scheduler.log 2>&1; fi
 0 0 * * 0 apt autoremove && apt autoclean >> /home/LogFiles/OS-Updates.log 2>&1
 30 0 * * * /usr/bin/composer self-update >> /home/LogFiles/Composer-Updates.log 2>&1
 # Update SSL Certificates for nginx

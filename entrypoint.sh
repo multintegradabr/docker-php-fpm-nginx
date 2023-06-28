@@ -54,6 +54,9 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Link php opcache config file"
     mkdir -p /usr/local/etc/php/conf.d
     ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
+
+    echo "Exporting variables to /etc/environment"
+    env >> /etc/environment
    
 else
     echo "Running on local"
