@@ -1,5 +1,7 @@
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/var/www
+
 # Laravel Scheduler
-* * * * * cd /home/site/wwwroot && php artisan schedule:run >> /home/LogFiles/Laravel-Scheduler.log 2>&1
+* * * * * php /var/www/artisan schedule:run >> /home/LogFiles/Laravel-Scheduler.log 2>&1
 # Update OS
 0 0 * * 0 apk update >> /home/LogFiles/OS-Updates.log 2>&1
 # Composer Updates
