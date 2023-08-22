@@ -8,7 +8,7 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Update seeders"
-php artisan db:seed InitSeeder --force
+php artisan db:seed --force
 if [ $? -ne 0 ]; then
     echo "db:seed failed, exiting..."
     exit 1
