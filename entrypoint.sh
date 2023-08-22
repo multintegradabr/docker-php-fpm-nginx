@@ -76,9 +76,13 @@ ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/http.d/default.conf
 # Configure files for php
 echo "Link php-fpm config files"
 rm /usr/local/etc/php-fpm.d/zz-docker.conf
+rm /usr/local/etc/php-fpm.d/docker.conf
 ln -sfn /home/site/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
+ln -sfn /home/site/docker/php/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
 ln -sfn /home/site/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
-
+ln -sfn /var/log/php/php-fpm.log /home/LogFiles/php-fpm.log
+ln -sfn /var/log/php/php-fpm-error.log /home/LogFiles/php-fpm-error.log
+ln -sfn /var/log/php/laravel-queue.log /home/LogFiles/laravel-queue.log
 # Configure files for cron
 echo "Add jobs on crontab"
 crontab /home/site/docker/cron/crontab

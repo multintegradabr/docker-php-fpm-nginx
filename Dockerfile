@@ -60,10 +60,16 @@ RUN apk --no-cache add pcre-dev ${PHPIZE_DEPS} \
   && rm -rf /tmp/pear
 
 RUN mkdir -p /run/php/
-RUN touch /run/php/php-fpm.sock
-RUN touch /run/php/php-fpm.pid
+RUN mkdir -p /var/log/php/
+RUN mkdir -p /var/log/supervisor/
+RUN touch /var/log/php/php-fpm.log
+RUN touch /var/log/php/php-fpm-error.log
+RUN chown www-data:www-data /run/php
+RUN chown www-data:www-data /var/log/php
+RUN chown www-data:www-data /var/log/php/php-fpm.log
+RUN chown www-data:www-data /var/log/php/php-fpm-error.log
 
-# Download Composer Files
+# Download Composer Files 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Install and configure Nginx
