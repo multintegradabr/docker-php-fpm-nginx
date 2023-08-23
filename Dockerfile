@@ -3,12 +3,6 @@ FROM php:8.2-fpm-alpine
 ENV PATH ${PATH}:/var/www
 ENV SSH_PASSWD "root:Docker!"
 
-# Update packages and install bash
-RUN apk update && apk upgrade
-RUN apk add --no-cache --upgrade bash
-RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
-RUN echo "cd /var/www" >> /etc/bash.bashrc
-
 # Essential configuration and SSH installation
 RUN echo "UTC-3" > /etc/timezone
 RUN apk add openssh \
@@ -16,6 +10,9 @@ RUN apk add openssh \
   && cd /etc/ssh/ \
   && ssh-keygen -A
 COPY sshd_config /etc/ssh/
+
+# Set default work directory
+RUN echo "cd /var/www" >> ~/.ashrc
 
 # Install essential Packages
 RUN apk add --no-cache \
@@ -97,5 +94,7 @@ COPY ./entrypoint.sh /bin/entrypoint.sh
 RUN chmod 775 /bin/entrypoint.sh
 
 EXPOSE 80 443 2222
+
+USER root
 
 ENTRYPOINT ["/bin/entrypoint.sh"]
