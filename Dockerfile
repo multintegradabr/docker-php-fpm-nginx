@@ -7,7 +7,7 @@ ENV SSH_PASSWD "root:Docker!"
 RUN apk update && apk upgrade
 RUN apk add --no-cache --upgrade bash
 RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
-RUN echo "cd /var/www/" >> /etc/bash.bashrc
+RUN echo "cd /var/www" >> /etc/bash.bashrc
 
 # Essential configuration and SSH installation
 RUN echo "UTC-3" > /etc/timezone
@@ -34,8 +34,8 @@ RUN apk add --no-cache \
   openrc \
   postgresql-client \
   htop \
-  shadow \
-  sudo 
+  sudo \
+  shadow 
 
 # Install PHP Libs & Extensions
 RUN apk add --no-cache \
