@@ -34,6 +34,7 @@ RUN apk add --no-cache \
   openrc \
   postgresql-client \
   htop \
+  shadow \
   sudo 
 
 # Install PHP Libs & Extensions
@@ -59,6 +60,8 @@ RUN apk --no-cache add pcre-dev ${PHPIZE_DEPS} \
   && apk del pcre-dev ${PHPIZE_DEPS} \
   && rm -rf /tmp/pear
 
+# Setting up the user and group permissions and creating the necessary directories
+RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 RUN mkdir -p /run/php/
 RUN mkdir -p /var/log/php/
 RUN mkdir -p /var/log/supervisor/
