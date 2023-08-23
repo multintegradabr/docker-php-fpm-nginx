@@ -95,6 +95,4 @@ RUN chmod 775 /bin/entrypoint.sh
 
 EXPOSE 80 443 2222
 
-USER root
-
 ENTRYPOINT ["/bin/entrypoint.sh"]
