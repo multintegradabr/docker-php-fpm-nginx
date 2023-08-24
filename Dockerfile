@@ -11,8 +11,11 @@ RUN apk add openssh \
   && ssh-keygen -A
 COPY sshd_config /etc/ssh/
 
-# Set default work directory
-RUN echo "cd /var/www" >> ~/.ashrc
+# Update packages and install bash
+RUN apk update && apk upgrade
+RUN apk add --no-cache --upgrade bash
+RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
+RUN echo "cd /var/www" >> /etc/bash.bashrc
 
 # Install essential Packages
 RUN apk add --no-cache \
