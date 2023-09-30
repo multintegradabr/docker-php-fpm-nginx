@@ -60,7 +60,8 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
    
 else
     echo "Running on local"
-    mkdir -p /home/site/LogFiles
+    mkdir -p /home/LogFiles
+    mkdir -p /home/site
     mv -vf /tmp/docker /home/site/
 fi
 
@@ -77,15 +78,20 @@ fi
 # Configure files for nginx
 echo "Link nginx config files"
 ln -sfn /home/site/docker/nginx/nginx.conf /etc/nginx/nginx.conf
-ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/conf.d/default.conf
+rm /etc/nginx/sites-enabled/default
+ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/sites-enabled/default.conf
 
 # Configure files for php
 echo "Link php-fpm config files"
 rm /usr/local/etc/php-fpm.d/zz-docker.conf
-rm /usr/local/etc/php-fpm.d/www.conf.default
-mkdir -p /usr/local/etc/php/php-fpm.d
-ln -sfn /home/site/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
+rm /usr/local/etc/php-fpm.d/docker.conf
+touch /home/LogFiles/laravel-queue.log
+ln -sfn /home/site/docker/php/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
 ln -sfn /home/site/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
+ln -sfn /home/site/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
+ln -sfn /var/log/php/php-fpm.log /home/LogFiles/php-fpm.log
+ln -sfn /var/log/php/php-fpm-error.log /home/LogFiles/php-fpm-error.log
+ln -sfn /var/log/php/laravel-queue.log /home/LogFiles/laravel-queue.log
 
 # Configure files for cron
 echo "Add jobs on crontab"
@@ -122,7 +128,7 @@ echo "Starting SSH server"
 service ssh start
 
 echo "Starting cron"
-service cron start
+/usr/sbin/crond
  
 echo "Starting supervisord"
 supervisord -c /etc/supervisor/supervisord.conf
