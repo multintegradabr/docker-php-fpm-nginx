@@ -91,7 +91,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 #NodeJS and NPM
 RUN RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - &&\
-  apt-get install -y nodejs
+  apt-get install -y nodejs npm
 
 # Clean cahe
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
