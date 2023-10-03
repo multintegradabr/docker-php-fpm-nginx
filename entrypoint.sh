@@ -122,6 +122,11 @@ else
     echo "Custom scripts not found"
 fi
 
+if [ "$ENABLE_DATADOG" = true ]; then
+    echo "Enabling Datadog"
+    /home/site/run.d/install-datadog-agent.sh
+fi
+
 echo "Starting services..."
 
 echo "Starting SSH server"

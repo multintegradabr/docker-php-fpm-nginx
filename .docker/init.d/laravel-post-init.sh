@@ -3,19 +3,19 @@
 if [ -f "artisan" ]; then
 
     echo "Migrate Laravel database"
-    sudo -u www-data php artisan migrate --force
+    sudo -E -u www-data php artisan migrate --force
     if [ $? -ne 0 ]; then
         echo "migrate failed"
     fi
 
     echo "Update seeders"
-    php artisan db:seed --force
+    sudo -E -u www-data php artisan db:seed --force
     if [ $? -ne 0 ]; then
         echo "db:seed failed"
     fi
 
     echo "Enable storage link"
-    php artisan storage:link
+    sudo -E -u www-data php artisan storage:link
     if [ $? -ne 0 ]; then
         echo "storage:link failed"
     fi
