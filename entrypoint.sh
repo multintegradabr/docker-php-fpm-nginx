@@ -122,9 +122,11 @@ else
     echo "Custom scripts not found"
 fi
 
-if [ "$ENABLE_DATADOG" = true ]; then
-    echo "Enabling Datadog"
-    /home/site/run.d/install-datadog-agent.sh
+if [ "$DATADOG_ENABLE" = true ]; then
+    echo "Installing Datadog Agent"
+    mkdir -p /opt/datadog/
+    chmod +x /home/site/docker/run.d/install-datadog-agent.sh
+    sudo /bin/bash /home/site/docker/run.d/install-datadog-agent.sh
 fi
 
 echo "Starting services..."

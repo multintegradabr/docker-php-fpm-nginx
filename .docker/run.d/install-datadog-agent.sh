@@ -13,6 +13,6 @@ service datadog-agent start
 echo "Configuring PHP Tracing Extension"
 curl -LO https://github.com/DataDog/dd-trace-php/releases/latest/download/datadog-setup.php
 
-sudo -E -u www-data php datadog-setup.php --php-bin=all --enable-appsec --enable-profiling
+sudo php datadog-setup.php --php-bin=all --enable-appsec --enable-profiling
 
 rm datadog-setup.php
