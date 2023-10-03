@@ -41,7 +41,7 @@ RUN apt install -y \
   cron
 
 # Install Github CLI
-RUN type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y) \
+RUN sudo apt update \
   && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
   && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
   && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
@@ -90,8 +90,17 @@ RUN chown www-data:www-data /var/log/php/php-fpm-error.log
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 #NodeJS and NPM
-RUN RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash - &&\
-  apt-get install -y nodejs npm
+RUN set -uex; \
+  apt-get update; \
+  apt-get install -y ca-certificates curl gnupg; \
+  mkdir -p /etc/apt/keyrings; \
+  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key \
+  | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg; \
+  NODE_MAJOR=18; \
+  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" \
+  > /etc/apt/sources.list.d/nodesource.list; \
+  apt-get update; \
+  apt-get install nodejs -y;
 
 # Clean cahe
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
