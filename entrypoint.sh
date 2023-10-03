@@ -57,12 +57,26 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
 
     echo "Exporting variables to /etc/environment"
     env >> /etc/environment
+
+    if [ "$DATADOG_ENABLE" = true ]; then
+    echo "Installing Datadog Agent"
+    mkdir -p /opt/datadog/
+    chmod +x /home/site/run.d/install-datadog-agent.sh
+    sudo /bin/bash /home/site/run.d/install-datadog-agent.sh
+fi
    
 else
     echo "Running on local"
     mkdir -p /home/LogFiles
     mkdir -p /home/site
     mv -vf /tmp/docker /home/site/
+
+    if [ "$DATADOG_ENABLE" = true ]; then
+    echo "Installing Datadog Agent"
+    mkdir -p /opt/datadog/
+    chmod +x /home/site/docker/run.d/install-datadog-agent.sh
+    sudo /bin/bash /home/site/docker/run.d/install-datadog-agent.sh
+fi
 fi
 
 # Configure Git credentials
@@ -120,13 +134,6 @@ if [ -d "/home/site/init.d" ]; then
 done
 else
     echo "Custom scripts not found"
-fi
-
-if [ "$DATADOG_ENABLE" = true ]; then
-    echo "Installing Datadog Agent"
-    mkdir -p /opt/datadog/
-    chmod +x /home/site/docker/run.d/install-datadog-agent.sh
-    sudo /bin/bash /home/site/docker/run.d/install-datadog-agent.sh
 fi
 
 echo "Starting services..."
