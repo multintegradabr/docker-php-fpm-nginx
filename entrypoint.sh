@@ -122,6 +122,7 @@ if [ -f /var/www/artisan ]; then
 else
     echo "Laravel app is not installed, laravel workers will not be configured"
 fi
+ln -sfn /home/site/docker/supervisor/supervisord.conf  /etc/supervisor/supervisord.conf
 ln -sfn /home/site/docker/supervisor/php-nginx.conf /etc/supervisor/conf.d/php-nginx.conf
 
 # Execute custom scripts
@@ -143,6 +144,6 @@ service ssh start
 
 echo "Starting cron"
 service cron start
- 
+
 echo "Starting supervisord"
 supervisord -c /etc/supervisor/supervisord.conf

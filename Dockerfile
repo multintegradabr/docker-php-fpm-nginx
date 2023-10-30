@@ -2,7 +2,17 @@ FROM php:8.2-fpm
 
 ENV PATH ${PATH}:/var/www
 ENV SSH_PASSWD "root:Docker!"
-ENV NODE_MAJOR=16
+ENV NODE_MAJOR=18
+
+# Install sudo and create a new user multi
+RUN apt update && apt install sudo
+RUN groupadd -g 1000 multi && \
+  useradd -u 1000 -g multi -m -d /home/multi -s /bin/bash multi && \
+  PASSWORD=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1) && \
+  echo "multi:$PASSWORD" | chpasswd
+
+#Add multi on sudoers
+RUN echo "multi ALL=NOPASSWD: ALL" > /etc/sudoers.d/multi
 
 # Essential SO configuration 
 RUN echo "UTC-3" > /etc/timezone
@@ -36,7 +46,6 @@ RUN apt install -y \
   postgresql-client \
   htop \
   nginx \
-  sudo \
   ca-certificates \
   cron
 
@@ -72,19 +81,18 @@ RUN pecl install redis \
   && docker-php-ext-enable redis
 
 # Setting up the user and group permissions and creating the necessary directories
-RUN usermod -u 1000 www-data && groupmod -g 1000 www-data
 RUN mkdir -p /run/php/
 RUN mkdir -p /var/log/php/
-RUN mkdir -p /var/log/supervisor/
 RUN touch /run/php/php-fpm.sock
 RUN touch /run/php/php-fpm.pid
 RUN touch /var/log/php/php-fpm.log
 RUN touch /var/log/php/php-fpm-error.log
-RUN touch /var/log/supervisor/laravel-queue.log
-RUN chown www-data:www-data /run/php
-RUN chown www-data:www-data /var/log/php
-RUN chown www-data:www-data /var/log/php/php-fpm.log
-RUN chown www-data:www-data /var/log/php/php-fpm-error.log
+RUN touch /var/log/php/laravel-queue.log
+RUN chown multi:multi /run/php
+RUN chown multi:multi /var/log/php
+RUN chown multi:multi /var/log/php/php-fpm.log
+RUN chown multi:multi /var/log/php/php-fpm-error.log
+RUN chown multi:multi /var/log/php/laravel-queue.log
 
 # Download Composer Files
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -107,8 +115,6 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 RUN apt autoremove -y
 
 # Copying configuration files to the container
-RUN mkdir -p /run/nginx/
-RUN touch /run/nginx/nginx.pid
 RUN mkdir -p /etc/nginx/ssl/
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
@@ -122,4 +128,6 @@ RUN chmod 775 /bin/entrypoint.sh
 
 EXPOSE 80 443 2222
 
-ENTRYPOINT ["/bin/entrypoint.sh"]
+ENTRYPOINT ["sudo", "/bin/entrypoint.sh"]
+
+USER multi:multi

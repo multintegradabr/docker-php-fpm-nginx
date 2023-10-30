@@ -1,7 +1,7 @@
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 # Laravel Scheduler
-* * * * * sudo -E -u www-data php /var/www/artisan schedule:run >> /home/LogFiles/Laravel-Scheduler.log 2>&1
+* * * * * env -i $(cat /tmp/root_env.txt) www-data php /var/www/artisan schedule:run >> /home/LogFiles/Laravel-Scheduler.log 2>&1
 # Update OS
 0 0 * * 0 apt autoremove && apt autoclean >> /home/LogFiles/OS-Updates.log 2>&1
 # Composer Updates
