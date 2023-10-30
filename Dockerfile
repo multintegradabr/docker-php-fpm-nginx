@@ -120,6 +120,7 @@ RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
 RUN rm -rf /var/www/html
 COPY ./.docker /tmp/docker
+RUN chown multi:multi /var/www
 WORKDIR /var/www/
 
 # Copy script file for initializing the container
