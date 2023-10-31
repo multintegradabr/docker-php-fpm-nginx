@@ -106,6 +106,7 @@ ln -sfn /home/site/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custo
 ln -sfn /var/log/php/php-fpm.log /home/LogFiles/php-fpm.log
 ln -sfn /var/log/php/php-fpm-error.log /home/LogFiles/php-fpm-error.log
 ln -sfn /var/log/php/laravel-queue.log /home/LogFiles/laravel-queue.log
+rm -r /var/www/html
 
 # Configure files for cron
 echo "Add jobs on crontab"
