@@ -6,6 +6,8 @@ rm -rf /home/multi/LogFiles/Composer-Updates.log
 rm -rf /home/multi/LogFiles/OS-Updates.log
 rm -rf /home/multi/LogFiles/RenewSSL.log
 
+#Set term
+export TERM=xterm-256color
 cat >/etc/motd <<EOL 
  ___ ___  __ __  _     ______  ____  ____   ______    ___   ____  ____    ____  ___     ____ 
 |   |   ||  |  || |   |      ||    ||    \ |      |  /  _] /    ||    \  /    ||   \   /    |

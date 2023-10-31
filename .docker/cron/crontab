@@ -8,4 +8,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 30 0 * * * /usr/bin/composer self-update >> /home/multi/LogFiles/Composer-Updates.log 2>&1
 # Update SSL Certificates for nginx
 00 20 * * 1 sudo /home/site/run.d/update-ssl-cert.sh >> /home/LogFiles/RenewSSL.log 2>&1
+# test 1
+* * * * * env >> /home/multi/LogFiles/Laravel-Scheduler.log 2>&1
+# test 2
+* * * * * echo "Running as $(whoami)" >> /home/multi/LogFiles/Laravel-Scheduler.log 2>&1
 #
