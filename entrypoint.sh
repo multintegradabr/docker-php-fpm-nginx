@@ -69,8 +69,7 @@ else
     echo "Running on local"
     mkdir -p /home/multi/LogFiles
     mkdir -p /home/site
-    mv -vf /tmp/docker /home/site/
-    chown 
+    mv -vf /tmp/docker /home/site/ 
 
     if [ "$DATADOG_ENABLE" = true ]; then
     echo "Installing Datadog Agent"
@@ -111,7 +110,7 @@ rm -r /var/www/html
 
 # Configure files for cron
 echo "Add jobs on crontab"
-crontab /home/site/docker/cron/crontab
+crontab -u multi /home/site/docker/cron/crontab
 
 # Configure files for supervisor
 echo "link supervisor file"
@@ -124,7 +123,7 @@ if [ -f /var/www/artisan ]; then
 else
     echo "Laravel app is not installed, laravel workers will not be configured"
 fi
-ln -sfn /home/site/docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+#mv -f /home/site/docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 ln -sfn /home/site/docker/supervisor/php-nginx.conf /etc/supervisor/conf.d/php-nginx.conf
 
 # Execute custom scripts
