@@ -27,8 +27,8 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
 
     echo "Move custom scripts to docker folder"
-    rm -rf /home/site/docker
-    mv -vf /tmp/docker /home/site/
+    rm -rf /home/multi/docker
+    mv -vf /tmp/docker /home/multi/
 
     echo "Move custom scripts to run.d folder"
     if [ -d "/home/site/run.d" ]; then
@@ -37,8 +37,8 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
         echo "run.d folder does not exist, creating one"
         mkdir -p /home/site/run.d
     fi
-    find /home/site/docker/run.d/* -type f -print0 | xargs -0 mv -t /home/site/run.d/
-    rm -rf /home/site/docker/run.d  
+    find /home/multi/docker/run.d/* -type f -print0 | xargs -0 mv -t /home/site/run.d/
+    rm -rf /home/multi/docker/run.d  
 
     echo "Move custom scripts to init.d folder"
     if [ -d "/home/site/init.d" ]; then
@@ -47,15 +47,12 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
         echo "init.d folder does not exist, creating one"
         mkdir -p /home/site/init.d
     fi
-    find /home/site/docker/init.d/* -type f -print0 | xargs -0 mv -t /home/site/init.d/
-    rm -rf /home/site/docker/init.d
+    find /home/multi/docker/init.d/* -type f -print0 | xargs -0 mv -t /home/site/init.d/
+    rm -rf /home/multi/docker/init.d
     
     echo "Link php opcache config file"
     mkdir -p /usr/local/etc/php/conf.d
-    ln -sfn /home/site/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
-
-    echo "Exporting variables to /etc/environment"
-    env >> /etc/environment
+    ln -sfn /home/multi/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
 
     if [ "$DATADOG_ENABLE" = true ]; then
     echo "Installing Datadog Agent"
@@ -67,14 +64,13 @@ fi
 else
     echo "Running on local"
     mkdir -p /home/multi/LogFiles
-    mkdir -p /home/site
-    mv -vf /tmp/docker /home/site/ 
+    mv -vf /tmp/docker /home/multi/ 
 
     if [ "$DATADOG_ENABLE" = true ]; then
     echo "Installing Datadog Agent"
     mkdir -p /opt/datadog/
-    chmod +x /home/site/docker/run.d/install-datadog-agent.sh
-    sudo /bin/bash /home/site/docker/run.d/install-datadog-agent.sh
+    chmod +x /home/multi/docker/run.d/install-datadog-agent.sh
+    sudo /bin/bash /home/multi/docker/run.d/install-datadog-agent.sh
 fi
 fi
 
@@ -90,18 +86,18 @@ fi
 
 # Configure files for nginx
 echo "Link nginx config files"
-ln -sfn /home/site/docker/nginx/nginx.conf /etc/nginx/nginx.conf
+ln -sfn /home/multi/docker/nginx/nginx.conf /etc/nginx/nginx.conf
 rm /etc/nginx/sites-enabled/default
-ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/sites-enabled/default.conf
+ln -sfn /home/multi/docker/nginx/default.conf /etc/nginx/sites-enabled/default.conf
 
 # Configure files for php
 echo "Link php-fpm config files"
 rm /usr/local/etc/php-fpm.d/zz-docker.conf
 rm /usr/local/etc/php-fpm.d/docker.conf
 touch /home/multi/LogFiles/laravel-queue.log
-ln -sfn /home/site/docker/php/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
-ln -sfn /home/site/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
-ln -sfn /home/site/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
+ln -sfn /home/multi/docker/php/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
+ln -sfn /home/multi/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
+ln -sfn /home/multi/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
 ln -sfn /var/log/php/php-fpm.log /home/multi/LogFiles/php-fpm.log
 ln -sfn /var/log/php/php-fpm-error.log /home/multi/LogFiles/php-fpm-error.log
 ln -sfn /var/log/php/laravel-queue.log /home/multi/LogFiles/laravel-queue.log
@@ -109,7 +105,7 @@ rm -r /var/www/html
 
 # Configure files for cron
 echo "Add jobs on crontab"
-crontab -u multi /home/site/docker/cron/crontab
+crontab -u multi /home/multi/docker/cron/crontab
 
 # Configure files for supervisor
 echo "link supervisor file"
@@ -118,12 +114,12 @@ echo "Verifing if Laravel app is installed"
 if [ -f /var/www/artisan ]; then
     echo "Laravel app is already installed"
     echo "Configure Laravel workers in supervisor"
-    ln -sfn /home/site/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
+    ln -sfn /home/multi/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
 else
     echo "Laravel app is not installed, laravel workers will not be configured"
 fi
-mv -f /home/site/docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
-ln -sfn /home/site/docker/supervisor/php-nginx.conf /etc/supervisor/conf.d/php-nginx.conf
+mv -f /home/multi/docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+ln -sfn /home/multi/docker/supervisor/php-nginx.conf /etc/supervisor/conf.d/php-nginx.conf
 
 # Execute custom scripts
 echo "Execute custom scripts"
