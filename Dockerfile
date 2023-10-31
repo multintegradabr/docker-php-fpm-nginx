@@ -128,6 +128,6 @@ RUN chmod 775 /bin/entrypoint.sh
 
 EXPOSE 80 443 2222
 
-ENTRYPOINT ["sudo", "/bin/entrypoint.sh"]
-
 USER multi:multi
+
+ENTRYPOINT ["sudo", "-E", "/bin/entrypoint.sh"]
