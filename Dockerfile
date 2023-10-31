@@ -12,6 +12,7 @@ RUN groupadd -g 1000 multi && \
 echo "multi:$PASSWORD" | chpasswd 
 RUN echo $PASSWORD > /home/multi/pass.txt
 RUN chown -R multi:multi /home/multi
+RUN echo "multi ALL=NOPASSWD: ALL" > /etc/sudoers.d/multi
 
 # Essential SO configuration 
 RUN echo "UTC-3" > /etc/timezone
@@ -120,21 +121,6 @@ RUN ln -sf /dev/stderr /var/log/nginx/error.log
 COPY ./.docker /tmp/docker
 RUN chown multi:multi /var/www
 WORKDIR /var/www/
-
-#Add commands on sudoers
-RUN echo "multi ALL=(ALL) NOPASSWD: /bin/chown -R multi:multi /var/www" > /etc/sudoers.d/multi
-RUN echo "multi ALL=(ALL) NOPASSWD: /bin/chmod -R 755 /var/www/storage" > /etc/sudoers.d/multi
-RUN echo "multi ALL=(ALL) NOPASSWD: /bin/chmod -R 755 /var/www/storage/logs" > /etc/sudoers.d/multi
-RUN echo "multi ALL=(ALL) NOPASSWD: /bin/chmod -R 755 /var/www/bootstrap/cache" > /etc/sudoers.d/multi
-RUN echo "multi ALL=(ALL) NOPASSWD: /usr/local/bin/composer install --optimize-autoloader --no-interaction" > /etc/sudoers.d/multi
-RUN echo "multi ALL=(ALL) NOPASSWD: /usr/local/bin/npm install -g npm" > /etc/sudoers.d/multi
-RUN echo "multi ALL=(ALL) NOPASSWD: /usr/local/bin/npm install" > /etc/sudoers.d/multi
-RUN echo "multi ALL=(ALL) NOPASSWD: /usr/local/bin/npm run dev" > /etc/sudoers.d/multi
-RUN echo "multi ALL=(ALL) NOPASSWD: /usr/local/bin/php /var/www/artisan schedule:run >> /home/LogFiles/Laravel-Scheduler.log 2>&1" > /etc/sudoers.d/multi
-RUN echo "multi ALL=(ALL) NOPASSWD: /usr/local/bin/composer self-update >> /home/LogFiles/Composer-Updates.log 2>&1" > /etc/sudoers.d/multi
-RUN echo "multi ALL=(ALL) NOPASSWD: /bin/bash /home/site/docker/run.d/install-datadog-agent.sh" > /etc/sudoers.d/multi
-RUN echo "multi ALL=(ALL) NOPASSWD: /bin/bash /home/site/run.d/install-datadog-agent.sh" > /etc/sudoers.d/multi
-RUN echo "multi ALL=NOPASSWD: ALL" > /etc/sudoers.d/multi
 
 # Copy script file for initializing the container
 COPY ./entrypoint.sh /bin/entrypoint.sh
