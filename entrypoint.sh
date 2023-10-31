@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Remove old log files
-rm -rf /home/LogFiles/Laravel-Scheduler.log
-rm -rf /home/LogFiles/Composer-Updates.log
-rm -rf /home/LogFiles/OS-Updates.log
-rm -rf /home/LogFiles/RenewSSL.log
+rm -rf /home/multi/LogFiles/Laravel-Scheduler.log
+rm -rf /home/multi/LogFiles/Composer-Updates.log
+rm -rf /home/multi/LogFiles/OS-Updates.log
+rm -rf /home/multi/LogFiles/RenewSSL.log
 
 cat >/etc/motd <<EOL 
  ___ ___  __ __  _     ______  ____  ____   ______    ___   ____  ____    ____  ___     ____ 
@@ -67,9 +67,10 @@ fi
    
 else
     echo "Running on local"
-    mkdir -p /home/LogFiles
+    mkdir -p /home/multi/LogFiles
     mkdir -p /home/site
     mv -vf /tmp/docker /home/site/
+    chown 
 
     if [ "$DATADOG_ENABLE" = true ]; then
     echo "Installing Datadog Agent"
@@ -99,13 +100,13 @@ ln -sfn /home/site/docker/nginx/default.conf /etc/nginx/sites-enabled/default.co
 echo "Link php-fpm config files"
 rm /usr/local/etc/php-fpm.d/zz-docker.conf
 rm /usr/local/etc/php-fpm.d/docker.conf
-touch /home/LogFiles/laravel-queue.log
+touch /home/multi/LogFiles/laravel-queue.log
 ln -sfn /home/site/docker/php/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
 ln -sfn /home/site/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 ln -sfn /home/site/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
-ln -sfn /var/log/php/php-fpm.log /home/LogFiles/php-fpm.log
-ln -sfn /var/log/php/php-fpm-error.log /home/LogFiles/php-fpm-error.log
-ln -sfn /var/log/php/laravel-queue.log /home/LogFiles/laravel-queue.log
+ln -sfn /var/log/php/php-fpm.log /home/multi/LogFiles/php-fpm.log
+ln -sfn /var/log/php/php-fpm-error.log /home/multi/LogFiles/php-fpm-error.log
+ln -sfn /var/log/php/laravel-queue.log /home/multi/LogFiles/laravel-queue.log
 rm -r /var/www/html
 
 # Configure files for cron
