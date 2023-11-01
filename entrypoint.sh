@@ -27,16 +27,27 @@ cat /etc/motd
 
 # Get environment variables to show up in SSH session
 eval $(printenv | sed -n "s/^\([^=]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/g' | sed '/=/s//="/' | sed 's/$/"/' >> /etc/profile)
- 
-# Configure files for Azure App Service
+
+echo "Create Logs folder"
+mkdir -p /home/multi/LogFiles
+
+# Fix permissions in multi folder
+sudo chown -R multi:multi /home/multi/
+
+# Remove docker folder if exists
+if [ -d "/home/multi/docker" ]; then
+    echo "Docker folder found"
+    echo "Removing old docker folder"
+    rm -rf /home/multi/docker
+else
+    echo "Docker folder not found"
+fi
+echo "Move custom scripts to docker folder"
+mv -vf /tmp/docker /home/multi/ 
+
+#Configure files for Azure App Service
 if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
-
-    echo "Move custom scripts to docker folder"
-    mkdir -p /home/multi/LogFiles
-    rm -rf /home/multi/docker
-    mv -vf /tmp/docker /home/multi/
-    chown multi:multi /home/multi/* 
     
     echo "Link php opcache config file"
     mkdir -p /usr/local/etc/php/conf.d
@@ -51,9 +62,6 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
    
 else
     echo "Running on local"
-    mkdir -p /home/multi/LogFiles
-    mv -vf /tmp/docker /home/multi/ 
-    chown multi:multi /home/multi/* 
 
     if [ "$DATADOG_ENABLE" = true ]; then
     echo "Installing Datadog Agent"
@@ -62,6 +70,9 @@ else
     sudo /bin/bash /home/multi/docker/run.d/install-datadog-agent.sh
     fi
 fi
+
+# Fix permissions in multi folder after changes
+sudo chown -R multi:multi /home/multi/
 
 # Configure Git credentials
 echo "Verifing if Git token are set"
