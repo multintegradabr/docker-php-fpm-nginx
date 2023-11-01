@@ -67,6 +67,7 @@ else
     echo "Running on local"
     mkdir -p /home/multi/LogFiles
     mv -vf /tmp/docker /home/multi/ 
+    chown multi:multi /home/multi/* 
 
     if [ "$DATADOG_ENABLE" = true ]; then
     echo "Installing Datadog Agent"
@@ -96,18 +97,10 @@ ln -sfn /home/multi/docker/nginx/default.conf /etc/nginx/sites-enabled/default.c
 echo "Link php-fpm config files"
 rm /usr/local/etc/php-fpm.d/zz-docker.conf
 rm /usr/local/etc/php-fpm.d/docker.conf
-touch /home/multi/LogFiles/laravel-queue.log
 ln -sfn /home/multi/docker/php/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
 ln -sfn /home/multi/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 ln -sfn /home/multi/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
-ln -sfn /var/log/php/php-fpm.log /home/multi/LogFiles/php-fpm.log
-ln -sfn /var/log/php/php-fpm-error.log /home/multi/LogFiles/php-fpm-error.log
-ln -sfn /var/log/php/laravel-queue.log /home/multi/LogFiles/laravel-queue.log
 rm -r /var/www/html
-
-# Configure files for cron
-echo "Add jobs on crontab"
-crontab -u multi /home/multi/docker/cron/crontab
 
 # Configure files for supervisor
 echo "link supervisor file"
@@ -122,6 +115,10 @@ else
 fi
 mv -f /home/multi/docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 ln -sfn /home/multi/docker/supervisor/php-nginx.conf /etc/supervisor/conf.d/php-nginx.conf
+
+# Configure files for cron
+echo "Add jobs on crontab"
+crontab -u multi /home/multi/docker/cron/crontab
 
 # Execute custom scripts
 echo "Execute custom scripts"
