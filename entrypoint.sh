@@ -29,28 +29,10 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
 
     echo "Move custom scripts to docker folder"
+    mkdir -p /home/multi/LogFiles
     rm -rf /home/multi/docker
     mv -vf /tmp/docker /home/multi/
-
-    echo "Move custom scripts to run.d folder"
-    if [ -d "/home/site/run.d" ]; then
-        echo "run.d folder already exists"
-    else
-        echo "run.d folder does not exist, creating one"
-        mkdir -p /home/site/run.d
-    fi
-    find /home/multi/docker/run.d/* -type f -print0 | xargs -0 mv -t /home/site/run.d/
-    rm -rf /home/multi/docker/run.d  
-
-    echo "Move custom scripts to init.d folder"
-    if [ -d "/home/site/init.d" ]; then
-        echo "init.d folder already exists"
-    else
-        echo "init.d folder does not exist, creating one"
-        mkdir -p /home/site/init.d
-    fi
-    find /home/multi/docker/init.d/* -type f -print0 | xargs -0 mv -t /home/site/init.d/
-    rm -rf /home/multi/docker/init.d
+    chown multi:multi /home/multi/* 
     
     echo "Link php opcache config file"
     mkdir -p /usr/local/etc/php/conf.d
@@ -59,9 +41,9 @@ if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     if [ "$DATADOG_ENABLE" = true ]; then
     echo "Installing Datadog Agent"
     mkdir -p /opt/datadog/
-    chmod +x /home/site/run.d/install-datadog-agent.sh
-    sudo /bin/bash /home/site/run.d/install-datadog-agent.sh
-fi
+    chmod +x /home/multi/run.d/install-datadog-agent.sh
+    sudo /bin/bash /home/multi/run.d/install-datadog-agent.sh
+    fi
    
 else
     echo "Running on local"
@@ -74,7 +56,7 @@ else
     mkdir -p /opt/datadog/
     chmod +x /home/multi/docker/run.d/install-datadog-agent.sh
     sudo /bin/bash /home/multi/docker/run.d/install-datadog-agent.sh
-fi
+    fi
 fi
 
 # Configure Git credentials
@@ -83,7 +65,7 @@ if [ -z ${GH_TOKEN+x}]; then
     echo "GH_TOKEN not seted"
 else
     echo "Update Git credentials"
-    cd /home/site & gh auth setup-git
+    cd /home/multi & gh auth setup-git
 git config --global --add safe.directory /var/www
 fi
 
@@ -122,9 +104,9 @@ crontab -u multi /home/multi/docker/cron/crontab
 
 # Execute custom scripts
 echo "Execute custom scripts"
-if [ -d "/home/site/init.d" ]; then
+if [ -d "/home/multi/init.d" ]; then
     echo "Custom scripts found"
-    for f in /home/site/init.d/*.sh; do
+    for f in /home/multi/init.d/*.sh; do
     echo "Executing $f"
     . "$f"
 done
