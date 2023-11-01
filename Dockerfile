@@ -9,8 +9,7 @@ RUN apt update && apt install sudo
 RUN groupadd -g 1000 multi && \
   useradd -u 1000 -g multi -m -d /home/multi -s /bin/bash multi && \
   PASSWORD=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1) && \
-echo "multi:$PASSWORD" | chpasswd \
-echo $PASSWORD > /home/multi/pass.txt
+echo "multi:$PASSWORD" | chpasswd
 RUN chown -R multi:multi /home/multi
 RUN echo "multi ALL=NOPASSWD: ALL" > /etc/sudoers.d/multi
 
