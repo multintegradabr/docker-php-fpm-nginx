@@ -117,7 +117,7 @@ RUN apt autoremove -y
 RUN mkdir -p /etc/nginx/ssl/
 RUN ln -sf /dev/stdout /var/log/nginx/access.log
 RUN ln -sf /dev/stderr /var/log/nginx/error.log
-COPY ./.docker /tmp/docker
+COPY ./.docker /usr/local/docker
 RUN chown multi:multi /var/www
 WORKDIR /var/www/
 
