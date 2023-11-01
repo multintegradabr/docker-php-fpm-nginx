@@ -18,10 +18,10 @@ cat >/etc/motd <<EOL
 |___|___| \__,_||_____| |__|  |____||__|__|  |__|  |_____||___,_||__|\_||__|__||_____||__|__|
                       A P P   S E R V I C E   O N   L I N U X
 PHP version : `php -v | head -n 1 | cut -d ' ' -f 2`
-____________________________________________________________________________________________________________________
+___________________________________________________________________________________________________________________
 ATENÇÃO: sempre utilize o usuário 'multi' para realizar operações no php e supervisor por exemplo, altere o usuário
-usando o comando: 'su multi', se precisar de elevação, como a instalação de um pacote, use 'sudo multi'.
---------------------------------------------------------------------------------------------------------------------
+usando o comando: 'su multi', se precisar de elevação, como a instalação de um pacote, use 'sudo <comando>'
+-------------------------------------------------------------------------------------------------------------------
 EOL
 cat /etc/motd
 
