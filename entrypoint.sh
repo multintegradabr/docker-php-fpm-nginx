@@ -85,6 +85,9 @@ rm -r /var/www/html
 # Fix permissions in multi folder after changes
 sudo chown -R multi:multi /home/multi/
 
+# Fix permission for cron script
+sudo chmod +x /usr/local/docker/cron/php-schedule.sh
+
 # Configure files for supervisor
 echo "Setting supervisor file"
 
