@@ -96,7 +96,9 @@ if [ -f /var/www/artisan ]; then
     echo "Laravel app is already installed"
     echo "Configure Laravel workers in supervisor"
     mv -vf /usr/local/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
-    sudo /bin/bash /usr/local/docker/startup/laravel-post-init.sh
+    chmod +x /usr/local/docker/startup/laravel-post-init.sh
+    /bin/bash /usr/local/docker/startup/laravel-post-init.sh >> /home/multi/LogFiles/Post-Init-App.log 2>&1
+    rm /var/www/storage/logs/laravel.log
 else
     echo "Laravel app is not installed, laravel workers will not be configured"
 fi
