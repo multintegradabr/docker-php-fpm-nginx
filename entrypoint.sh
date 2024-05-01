@@ -80,7 +80,6 @@ rm /usr/local/etc/php-fpm.d/docker.conf
 mv -vf /usr/local/docker/php/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
 mv -vf /usr/local/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
 mv -vf /usr/local/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
-rm -r /var/www/html
 
 # Fix permissions in multi folder after changes
 sudo chown -R multi:multi /home/multi/
