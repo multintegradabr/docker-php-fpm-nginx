@@ -5,6 +5,4 @@ SHELL=/bin/bash
 0 0 * * 0 sudo apt autoremove && apt autoclean >> /home/LogFiles/OS-Updates.log 2>&1
 # Composer Updates
 30 0 * * * /usr/bin/composer self-update >> /home/multi/LogFiles/Composer-Updates.log 2>&1
-# Update SSL Certificates for nginx
-00 20 * * 1 sudo /home/site/scripts/update-ssl-cert.sh >> /home/LogFiles/RenewSSL.log 2>&1
 #
