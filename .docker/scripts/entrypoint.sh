@@ -74,7 +74,7 @@ echo "Setting supervisor file"
 mv -vf /usr/local/docker/supervisor/app-services.conf /etc/supervisor/conf.d/app-services.conf
 
 echo "Verifing if Laravel app is installed"
-if [ -f /home/multi/app/artisan ]; then
+if [ -f /var/www/artisan ]; then
     echo "Laravel app is already installed"
     echo "Configure Laravel scheduler job and workers in supervisor"
     mv -vf /usr/local/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
@@ -83,7 +83,7 @@ if [ -f /home/multi/app/artisan ]; then
     chmod +x /usr/local/docker/scripts/laravel-post-init.sh
     echo "Execute Laravel post init script"
     /bin/bash /usr/local/docker/scripts/laravel-post-init.sh >> /home/multi/LogFiles/Post-Init-App.log 2>&1
-    rm /home/multi/app/storage/logs/*
+    rm /var/www/storage/logs/*
 else
     echo "Laravel app is not installed, laravel scheduler and workers will not be configured"
 

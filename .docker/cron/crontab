@@ -3,5 +3,5 @@
 # Composer Updates
 30 0 * * * /usr/bin/composer self-update >> /home/multi/LogFiles/Composer-Updates.log 2>&1
 # Laravel Scheduler
-* * * * * php /home/multi/app/artisan schedule:run >> /home/multi/LogFiles/Laravel-Scheduler.log 2>&1
+* * * * * php /var/www/artisan schedule:run >> /home/multi/LogFiles/Laravel-Scheduler.log 2>&1
 #

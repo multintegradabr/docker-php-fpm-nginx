@@ -25,7 +25,6 @@ RUN usermod -l multi ubuntu
 RUN usermod -d /home/multi -m multi
 RUN groupmod -n multi ubuntu
 RUN chown -R multi:multi /home/multi
-
 RUN echo "multi:muti" | chpasswd
 RUN echo "multi ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
@@ -95,9 +94,13 @@ USER multi:multi
 
 # Create Logs folder and copy the configuration files
 RUN mkdir -p /home/multi/LogFiles
+RUN chown -R multi:multi /var/www
+RUN rm -rf /var/www/html
 COPY /.docker /usr/local/docker
 RUN sudo chown multi:multi /usr/local/docker
-WORKDIR /home/multi/app
+
+# Set the working directory
+WORKDIR /var/www
 
 EXPOSE 80 443 9000
 
