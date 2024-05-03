@@ -94,9 +94,9 @@ USER multi:multi
 
 # Create Logs folder and copy the configuration files
 RUN mkdir -p /home/multi/LogFiles
-RUN chown -R multi:multi /var/www
 RUN rm -rf /var/www/html
 COPY /.docker /usr/local/docker
+RUN sudo chown -R multi:multi /var/www
 RUN sudo chown multi:multi /usr/local/docker
 
 # Set the working directory
