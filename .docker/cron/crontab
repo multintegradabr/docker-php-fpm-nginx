@@ -1,8 +1,7 @@
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-SHELL=/bin/bash
-
 # Update OS
 0 0 * * 0 sudo apt autoremove && apt autoclean >> /home/LogFiles/OS-Updates.log 2>&1
 # Composer Updates
 30 0 * * * /usr/bin/composer self-update >> /home/multi/LogFiles/Composer-Updates.log 2>&1
+# Laravel Scheduler
+* * * * * php /home/multi/app/artisan schedule:run >> /home/multi/LogFiles/Laravel-Scheduler.log 2>&1
 #

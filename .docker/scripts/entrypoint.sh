@@ -28,85 +28,66 @@ cat /etc/motd
 # Get environment variables to show up in SSH session
 eval $(printenv | sed -n "s/^\([^=]\+\)=\(.*\)$/export \1=\2/p" | sed 's/"/\\\"/g' | sed '/=/s//="/' | sed 's/$/"/' >> /etc/profile)
 
-echo "Create Logs folder"
-mkdir -p /home/multi/LogFiles
 
-#Configure files for Azure App Service
+#Configure files for Azure App Service or Local
 if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
     
     echo "Setting php opcache config file"
-    mkdir -p /usr/local/etc/php/conf.d
-    mv -vf /usr/local/docker/php/php-fpm/opcache.ini /usr/local/etc/php/conf.d/10-opcache.ini
-
-    if [ "$DATADOG_ENABLE" = true ]; then
-    echo "Installing Datadog Agent"
-    mkdir -p /opt/datadog/
-    chmod +x /usr/local/docker/startup/install-datadog-agent.sh
-    sudo /bin/bash /usr/local/docker/startup/install-datadog-agent.sh
-    fi
-   
+    mv -vf /usr/local/docker/php/php-fpm/opcache.ini /etc/php/8.2/fpm/conf.d/10-opcache.ini
+  
 else
     echo "Local Running"
 
-    if [ "$DATADOG_ENABLE" = true ]; then
+
+fi
+
+# Configure Datadog
+if [ "$DATADOG_ENABLE" = true ]; then
     echo "Installing Datadog Agent"
     mkdir -p /opt/datadog/
-    chmod +x /usr/local/docker/startup/install-datadog-agent.sh
-    sudo /bin/bash /usr/local/docker/startup/install-datadog-agent.sh
-    fi
+    chmod +x /usr/local/docker/scripts/install-datadog-agent.sh
+    sudo /bin/bash /usr/local/docker/scripts/install-datadog-agent.sh
 fi
 
 # Configure Git credentials
 echo "Verifing if Git token are set"
 if [ -z ${GH_TOKEN+x}]; then
-    echo "GH_TOKEN not seted"
+    echo "GH_TOKEN not defined, skipping Git credentials update"
 else
     echo "Update Git credentials"
     cd /home/multi & gh auth setup-git
-git config --global --add safe.directory /var/www
+git config --global --add safe.directory /home/multi
 fi
-
-# Configure files for nginx
-echo "Setting nginx config files"
-mv -vf /usr/local/docker/nginx/nginx.conf /etc/nginx/nginx.conf
-rm /etc/nginx/sites-enabled/default
-mv -vf /usr/local/docker/nginx/default.conf /etc/nginx/sites-enabled/default.conf
 
 # Configure files for php
 echo "Setting php-fpm config files"
-rm /usr/local/etc/php-fpm.d/zz-docker.conf
-rm /usr/local/etc/php-fpm.d/docker.conf
-mv -vf /usr/local/docker/php/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
-mv -vf /usr/local/docker/php/php-fpm/www.conf /usr/local/etc/php-fpm.d/www.conf
-mv -vf /usr/local/docker/php/php-fpm/custom.ini /usr/local/etc/php/conf.d/custom.ini
+mv -vf /usr/local/docker/php/www.conf /etc/php/8.2/fpm/pool.d/www.conf
+mv -vf /usr/local/docker/php/custom.ini /etc/php/8.2/fpm/conf.d/custom.ini
 
-# Fix permissions in multi folder after changes
-sudo chown -R multi:multi /home/multi/
-
-# Fix permission for cron script
-sudo chmod +x /usr/local/docker/cron/php-schedule.sh
+# Configure files for nginx
+echo "Setting nginx config files"
+mv -vf /usr/local/docker/nginx/default.conf /etc/nginx/sites-enabled/default
 
 # Configure files for supervisor
 echo "Setting supervisor file"
+mv -vf /usr/local/docker/supervisor/app-services.conf /etc/supervisor/conf.d/app-services.conf
 
 echo "Verifing if Laravel app is installed"
-if [ -f /var/www/artisan ]; then
+if [ -f /home/multi/app/artisan ]; then
     echo "Laravel app is already installed"
-    echo "Configure Laravel workers in supervisor"
+    echo "Configure Laravel scheduler job and workers in supervisor"
     mv -vf /usr/local/docker/supervisor/laravel-workers.conf /etc/supervisor/conf.d/laravel-workers.conf
-    chmod +x /usr/local/docker/startup/laravel-post-init.sh
-    /bin/bash /usr/local/docker/startup/laravel-post-init.sh >> /home/multi/LogFiles/Post-Init-App.log 2>&1
-    rm /var/www/storage/logs/*
+    crontab -u multi -l | cat - /usr/local/docker/cron/crontab | crontab -u multi -
+    
+    chmod +x /usr/local/docker/scripts/laravel-post-init.sh
+    echo "Execute Laravel post init script"
+    /bin/bash /usr/local/docker/scripts/laravel-post-init.sh >> /home/multi/LogFiles/Post-Init-App.log 2>&1
+    rm /home/multi/app/storage/logs/*
 else
-    echo "Laravel app is not installed, laravel workers will not be configured"
-fi
-mv -vf /usr/local/docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
-mv -vf /usr/local/docker/supervisor/php-nginx.conf /etc/supervisor/conf.d/php-nginx.conf
+    echo "Laravel app is not installed, laravel scheduler and workers will not be configured"
 
-# Configure files for cron
-echo "Add jobs on crontab"
-crontab -u multi /usr/local/docker/cron/crontab
+fi
 
 # Execute custom scripts
 echo "Execute custom scripts"
@@ -128,5 +109,5 @@ service ssh start
 echo "Starting cron"
 service cron start
 
-echo "Starting supervisord"
+echo "Starting supervisor"
 supervisord -c /etc/supervisor/supervisord.conf
