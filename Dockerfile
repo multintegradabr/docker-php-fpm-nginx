@@ -2,7 +2,6 @@ FROM php:8.2-fpm
 
 ENV PATH ${PATH}:/var/www
 ENV SSH_PASSWD "root:Docker!"
-ENV NODE_MAJOR=18
 
 # Install sudo and create a new user multi
 RUN apt update && apt install sudo
@@ -95,10 +94,6 @@ RUN chown multi:multi /var/log/php/laravel-queue.log
 
 # Download Composer Files
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-#NodeJS and NPM
-RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - &&\
-  apt-get install -y nodejs
 
 # Clean cahe
 RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
