@@ -20,12 +20,16 @@ cat /etc/motd
 # Azure App Service: opcache de produção.
 if [[ "$WEBSITE_HOSTNAME" == *"azurewebsites.net"* ]]; then
     echo "Running on Azure App Service"
-    cp -f /usr/local/docker/php/php-fpm/opcache.ini "/etc/php/${PHP_VERSION}/fpm/conf.d/10-opcache.ini"
+    # Arquivo próprio: o 10-opcache.ini do Ubuntu é symlink para o .ini que carrega a extensão, e
+    # sobrescrevê-lo desligaria o opcache.
+    cp -f /usr/local/docker/php/php-fpm/opcache.ini "/etc/php/${PHP_VERSION}/fpm/conf.d/99-opcache-prod.ini"
 else
     echo "Local Running"
 fi
 
-if [ "$DATADOG_ENABLE" = true ]; then
+if [ "$DATADOG_ENABLE" = true ] && [ -z "${DD_API_KEY:-}" ]; then
+    echo "AVISO: DATADOG_ENABLE=true sem DD_API_KEY — o agente do Datadog NÃO será instalado."
+elif [ "$DATADOG_ENABLE" = true ]; then
     echo "Installing Datadog Agent"
     mkdir -p /opt/datadog/
     /bin/bash /usr/local/docker/startup/install-datadog-agent.sh

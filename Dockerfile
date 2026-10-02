@@ -15,7 +15,6 @@ ARG PHP_VERSION=8.2
 ENV DEBIAN_FRONTEND=noninteractive \
     TZ=America/Fortaleza \
     PHP_VERSION=${PHP_VERSION} \
-    COMPOSER_HOME=/tmp/composer \
     COMPOSER_ALLOW_SUPERUSER=1
 
 LABEL org.opencontainers.image.source="https://github.com/multintegradabr/docker-php-fpm-nginx" \
@@ -57,6 +56,8 @@ RUN apt-get update \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Sem USER fixo: o job do CI define o uid com --user, para casar com o dono do workspace no host.
+# Esse uid não existe no /etc/passwd, e o HOME padrão (/) não é gravável para o git do checkout.
+ENV HOME=/tmp
 
 # ---------------------------------------------------------------------------------------------
 

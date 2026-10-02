@@ -81,6 +81,9 @@ jobs:
           context: .
           target: ${{ matrix.target }}
           push: true
+          # Sem attestation: ela cria manifests filhos que a retenção conta como versões e apaga,
+          # deixando tags antigas quebradas.
+          provenance: false
           tags: ${{ steps.tags.outputs.list }}
           cache-from: type=gha,scope=${{ matrix.target }}
 
@@ -97,4 +100,5 @@ jobs:
         with:
           package-name: php-fpm-nginx
           package-type: container
-          min-versions-to-keep: 20
+          # 2 versões por build (ci + app): ~15 builds, uns 3 meses de rebuild semanal.
+          min-versions-to-keep: 30

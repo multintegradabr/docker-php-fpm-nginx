@@ -45,7 +45,7 @@ container:
 ## Estágio `ci`
 
 - Não fixa usuário: o job define o uid com `--user`, para casar com o dono do workspace no runner.
-- `COMPOSER_HOME=/tmp/composer`, então funciona com qualquer uid.
+- `HOME=/tmp`, então git e Composer funcionam com qualquer uid.
 - Cobertura: `php -d extension=pcov -d pcov.enabled=1 ...`.
 
 ## Build local
