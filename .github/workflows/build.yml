@@ -1,0 +1,100 @@
+name: Build e publicação da imagem
+
+on:
+  push:
+    branches: [php8.2-nodejs-ubuntu]
+  pull_request:
+  # Rebuild semanal: pega os patches de segurança do PHP (ppa:ondrej) e do Ubuntu.
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE: ghcr.io/multintegradabr/php-fpm-nginx
+  PHP_VERSION: "8.2"
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [ci, app]
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          load: true
+          tags: local/php:${{ matrix.target }}
+          cache-from: type=gha,scope=${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.target }}
+
+      - name: Smoke test
+        run: |
+          docker run --rm --entrypoint php local/php:${{ matrix.target }} -v
+          missing=""
+          for ext in bcmath curl gd intl mbstring "Zend OPcache" pdo_pgsql pgsql redis sqlite3 xml zip; do
+            docker run --rm --entrypoint php local/php:${{ matrix.target }} -m | grep -qix "$ext" || missing="$missing $ext"
+          done
+          if [ -n "$missing" ]; then echo "Extensões faltando:$missing"; exit 1; fi
+          docker run --rm --entrypoint composer local/php:${{ matrix.target }} --version
+          if [ "${{ matrix.target }}" = "app" ]; then
+            # O php-fpm sobe como multi pelo supervisor; como root ele exige "user" no pool.
+            docker run --rm --entrypoint php-fpm${PHP_VERSION} local/php:app -t --fpm-config /etc/php/${PHP_VERSION}/fpm/php-fpm.conf
+            docker run --rm --user root --entrypoint nginx local/php:app -t
+            docker run --rm --entrypoint node local/php:app -v
+          fi
+
+      - name: Tags
+        if: github.event_name != 'pull_request'
+        id: tags
+        run: |
+          base="${IMAGE}:${PHP_VERSION}-${{ matrix.target }}"
+          echo "list=${base},${base}-$(date -u +%Y%m%d),${base}-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Login no GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publicação
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          target: ${{ matrix.target }}
+          push: true
+          tags: ${{ steps.tags.outputs.list }}
+          cache-from: type=gha,scope=${{ matrix.target }}
+
+  # O pacote é privado e conta no armazenamento do plano: sem retenção, os rebuilds semanais
+  # acumulam versões para sempre.
+  retention:
+    needs: build
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    permissions:
+      packages: write
+    steps:
+      - uses: actions/delete-package-versions@v5
+        with:
+          package-name: php-fpm-nginx
+          package-type: container
+          min-versions-to-keep: 20
