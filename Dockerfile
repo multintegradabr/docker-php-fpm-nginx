@@ -1,124 +1,105 @@
-FROM php:8.2-fpm
+# syntax=docker/dockerfile:1.7
+#
+# Imagem base dos projetos PHP da Multintegrada, montada como os servidores do Forge:
+# Ubuntu 24.04 + PHP do ppa:ondrej. Três estágios:
+#   base: PHP CLI com as extensões, Composer e o usuário multi (uid 1000)
+#   ci:   base + pcov (desligado) e cliente do Postgres, para rodar testes no CI
+#   app:  base + php-fpm, nginx, supervisor, cron e Node, para o ambiente local
 
-ENV PATH ${PATH}:/var/www
-ENV SSH_PASSWD "root:Docker!"
-ENV NODE_MAJOR=18
+ARG UBUNTU_VERSION=24.04
 
-# Install sudo and create a new user multi
-RUN apt update && apt install sudo
-RUN groupadd -g 1000 multi && \
-  useradd -u 1000 -g multi -m -d /home/multi -s /bin/bash multi && \
-  PASSWORD=$(tr -cd '[:alnum:]' < /dev/urandom | fold -w30 | head -n1) && \
-echo "multi:$PASSWORD" | chpasswd
-RUN chown -R multi:multi /home/multi
-RUN echo "multi ALL=NOPASSWD: ALL" > /etc/sudoers.d/multi
+FROM ubuntu:${UBUNTU_VERSION} AS base
 
-# Essential SO configuration 
-RUN echo "UTC-3" > /etc/timezone
-RUN apt update && apt install -y tzdata
-RUN ln -fs /usr/share/zoneinfo/America/Fortaleza /etc/localtime
+ARG PHP_VERSION=8.2
 
-# Set bash as default shell
-RUN apt install bash
-RUN sed -i 's/bin\/ash/bin\/bash/g' /etc/passwd
-RUN echo "cd /var/www" >> /etc/bash.bashrc
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=America/Fortaleza \
+    PHP_VERSION=${PHP_VERSION} \
+    COMPOSER_ALLOW_SUPERUSER=1
 
-# Configuration for SSH Server
-RUN apt install -y --no-install-recommends dialog \
-  && apt update \
-  && apt install -y --no-install-recommends openssh-server \
-  && echo "$SSH_PASSWD" | chpasswd
-COPY sshd_config /etc/ssh/
+LABEL org.opencontainers.image.source="https://github.com/multintegradabr/docker-php-fpm-nginx" \
+      org.opencontainers.image.description="PHP ${PHP_VERSION} em Ubuntu, no mesmo padrão dos servidores do Forge"
 
-# Install essential Packages
-RUN apt install -y \
-  zip \
-  grep \
-  unzip \
-  curl \
-  supervisor \
-  nano \
-  wget \
-  git \
-  openssl \
-  dialog \
-  postgresql-client \
-  htop \
-  nginx \
-  ca-certificates \
-  cron
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates curl git gnupg software-properties-common tzdata unzip zip \
+    && add-apt-repository -y ppa:ondrej/php \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        php${PHP_VERSION}-cli php${PHP_VERSION}-bcmath php${PHP_VERSION}-curl php${PHP_VERSION}-gd \
+        php${PHP_VERSION}-intl php${PHP_VERSION}-mbstring php${PHP_VERSION}-opcache php${PHP_VERSION}-pgsql \
+        php${PHP_VERSION}-readline php${PHP_VERSION}-redis php${PHP_VERSION}-sqlite3 php${PHP_VERSION}-xml \
+        php${PHP_VERSION}-zip \
+    && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
+    && echo "${TZ}" > /etc/timezone \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Install Github CLI
-RUN sudo apt update \
-  && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-  && sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-  && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-  && sudo apt update \
-  && sudo apt install gh -y
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Install PHP Libs & Extensions
-RUN apt update -y && apt install -y \
-  libpng-dev \
-  libpq-dev \
-  libzip-dev \
-  libicu-dev \
-  libssl-dev \
-  gnupg \
-  && docker-php-ext-configure gd \
-  && docker-php-ext-install -j$(nproc) gd \
-  && docker-php-ext-install pdo_pgsql \
-  && docker-php-ext-install pdo \
-  && docker-php-ext-install pgsql \
-  && docker-php-ext-install exif \
-  && docker-php-ext-install zip \
-  && docker-php-ext-install opcache \
-  && docker-php-ext-configure intl \
-  && docker-php-ext-install intl \
-  && docker-php-ext-install bcmath
+# O ubuntu:24.04 já vem com o usuário "ubuntu" no uid 1000, que é o uid do multi.
+RUN userdel --remove ubuntu \
+    && groupadd --gid 1000 multi \
+    && useradd --uid 1000 --gid multi --create-home --shell /bin/bash multi \
+    && mkdir -p /var/www && chown multi:multi /var/www
 
-RUN pecl install redis \
-  && docker-php-ext-enable redis
+COPY .docker/php/php-fpm/custom.ini /etc/php/${PHP_VERSION}/cli/conf.d/99-custom.ini
 
-# Setting up the user and group permissions and creating the necessary directories
-RUN mkdir -p /run/php/
-RUN mkdir -p /var/log/php/
-RUN touch /run/php/php-fpm.sock
-RUN touch /run/php/php-fpm.pid
-RUN touch /var/log/php/php-fpm.log
-RUN touch /var/log/php/php-fpm-error.log
-RUN touch /var/log/php/laravel-queue.log
-RUN chown multi:multi /run/php
-RUN chown multi:multi /var/log/php
-RUN chown multi:multi /var/log/php/php-fpm.log
-RUN chown multi:multi /var/log/php/php-fpm-error.log
-RUN chown multi:multi /var/log/php/laravel-queue.log
+WORKDIR /var/www
 
-# Download Composer Files
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+# ---------------------------------------------------------------------------------------------
 
-#NodeJS and NPM
-RUN curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - &&\
-  apt-get install -y nodejs
+FROM base AS ci
 
-# Clean cahe
-RUN apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
-RUN apt autoremove -y
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends php${PHP_VERSION}-pcov postgresql-client \
+    && phpdismod -v ${PHP_VERSION} -s cli pcov \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Copying configuration files to the container
-RUN mkdir -p /etc/nginx/ssl/
-RUN ln -sf /dev/stdout /var/log/nginx/access.log
-RUN ln -sf /dev/stderr /var/log/nginx/error.log
-RUN rm -r /var/www/html
-COPY ./.docker /usr/local/docker
-RUN chown multi:multi /usr/local/docker
-RUN chown multi:multi /var/www
-WORKDIR /var/www/
+# Sem USER fixo: o job do CI define o uid com --user, para casar com o dono do workspace no host.
+# Esse uid não existe no /etc/passwd, e o HOME padrão (/) não é gravável para o git do checkout.
+ENV HOME=/tmp
 
-# Copy script file for initializing the container
-COPY ./entrypoint.sh /bin/entrypoint.sh
-RUN chmod 775 /bin/entrypoint.sh
+# ---------------------------------------------------------------------------------------------
 
-EXPOSE 80 443 2222
+FROM base AS app
+
+ARG NODE_MAJOR=22
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        php${PHP_VERSION}-fpm nginx supervisor cron sudo nano htop postgresql-client \
+    && curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - \
+    && apt-get install -y --no-install-recommends nodejs \
+    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg -o /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+        > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update && apt-get install -y --no-install-recommends gh \
+    && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# O entrypoint e os scripts de init dos projetos usam sudo como multi.
+RUN echo "multi ALL=NOPASSWD: ALL" > /etc/sudoers.d/multi && chmod 0440 /etc/sudoers.d/multi
+
+# Configs no lugar já no build: o entrypoint só cuida do que depende do ambiente.
+COPY .docker/nginx/nginx.conf /etc/nginx/nginx.conf
+COPY .docker/nginx/default.conf /etc/nginx/sites-enabled/default.conf
+COPY .docker/php/php-fpm/php-fpm.conf /etc/php/${PHP_VERSION}/fpm/php-fpm.conf
+COPY .docker/php/php-fpm/www.conf /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf
+COPY .docker/php/php-fpm/custom.ini /etc/php/${PHP_VERSION}/fpm/conf.d/99-custom.ini
+COPY .docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
+COPY .docker/supervisor/php-nginx.conf /etc/supervisor/conf.d/php-nginx.conf
+COPY .docker /usr/local/docker
+
+RUN rm -f /etc/nginx/sites-enabled/default \
+    && rm -rf /var/www/html \
+    && mkdir -p /etc/nginx/ssl /run/php /var/log/php /home/multi/LogFiles \
+    && ln -sf /dev/stdout /var/log/nginx/access.log \
+    && ln -sf /dev/stderr /var/log/nginx/error.log \
+    && chown -R multi:multi /run/php /var/log/php /home/multi /usr/local/docker /var/www \
+    && chmod +x /usr/local/docker/cron/php-schedule.sh /usr/local/docker/startup/*.sh
+
+COPY --chmod=775 entrypoint.sh /bin/entrypoint.sh
+
+EXPOSE 80 443
 
 USER multi:multi
 

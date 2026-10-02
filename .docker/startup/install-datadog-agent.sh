@@ -2,7 +2,7 @@
 
 echo "Download Datadog Agent"
 export DD_HOSTNAME=$HOSTNAME
-DD_API_KEY=4190390b821cd76e0f809161f3386d3a DD_SITE="datadoghq.com" DD_INSTALL_ONLY=true bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script_agent7.sh)"
+DD_API_KEY="${DD_API_KEY:?Defina DD_API_KEY para instalar o agente do Datadog}" DD_SITE="datadoghq.com" DD_INSTALL_ONLY=true bash -c "$(curl -L https://s3.amazonaws.com/dd-agent/scripts/install_script_agent7.sh)"
 
 echo "Configuring Datadog Agent"
 cp /etc/datadog-agent/security-agent.yaml.example /etc/datadog-agent/security-agent.yaml
