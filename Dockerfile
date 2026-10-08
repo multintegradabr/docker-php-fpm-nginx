@@ -55,6 +55,13 @@ RUN apt-get update \
     && phpdismod -v ${PHP_VERSION} -s cli pcov \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# A suíte do SI recria a aplicação a cada teste e relê as rotas, o cache de rotas (2,5 MB) e
+# as views compiladas. Sem opcache no CLI cada require refaz o parse: com ele ligado, o
+# CI do SI (08/10, 2 jobs simultâneos): "Execute tests" de 319 s para 230 s junto com o route:cache.
+# revalidate_freq=0 confere o mtime a cada require, para um arquivo reescrito no meio da
+# suíte (view compilada, cache de rotas) não rodar o opcode antigo.
+RUN printf 'opcache.enable_cli=1\nopcache.revalidate_freq=0\n' > /etc/php/${PHP_VERSION}/cli/conf.d/99-ci-opcache.ini
+
 # Sem USER fixo: o job do CI define o uid com --user, para casar com o dono do workspace no host.
 # Esse uid não existe no /etc/passwd, e o HOME padrão (/) não é gravável para o git do checkout.
 ENV HOME=/tmp
