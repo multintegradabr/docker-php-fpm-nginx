@@ -5,7 +5,7 @@ Imagem base dos projetos PHP da Multintegrada, montada como os servidores do For
 | Tag | Estágio | Conteúdo | Uso |
 |---|---|---|---|
 | `ghcr.io/multintegradabr/php-fpm-nginx:8.2-app` | `app` | PHP 8.2 (CLI + FPM), nginx, supervisor, cron, Node 22, Composer, gh | Ambiente local dos projetos |
-| `ghcr.io/multintegradabr/php-fpm-nginx:8.2-ci` | `ci` | PHP 8.2 CLI, Composer, pcov (desligado), cliente do Postgres | Testes no CI (runner self-hosted) |
+| `ghcr.io/multintegradabr/php-fpm-nginx:8.2-ci` | `ci` | PHP 8.2 CLI, Composer, pcov (desligado), cliente do Postgres, zstd | Testes no CI (runner self-hosted) |
 
 Cada build também publica tags fixas: `8.2-<estágio>-<AAAAMMDD>` e `8.2-<estágio>-<sha>`.
 
@@ -44,6 +44,8 @@ container:
 
 ## Estágio `ci`
 
+- Inclui `zstd`, `zstdmt` e `unzstd`: o `actions/cache` seleciona zstd automaticamente quando o programa está disponível.
+- A primeira execução com zstd precisa criar um cache novo: o formato faz parte da versão interna do cache. Depois da publicação da imagem, rode o workflow de testes na branch principal dos projetos consumidores para aquecer o cache compartilhado com os PRs.
 - Não fixa usuário: o job define o uid com `--user`, para casar com o dono do workspace no runner.
 - `HOME=/tmp`, então git e Composer funcionam com qualquer uid.
 - Cobertura: `php -d extension=pcov -d pcov.enabled=1 ...`.

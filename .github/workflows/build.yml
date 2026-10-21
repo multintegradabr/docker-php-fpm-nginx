@@ -52,6 +52,20 @@ jobs:
           done
           if [ -n "$missing" ]; then echo "Extensões faltando:$missing"; exit 1; fi
           docker run --rm --entrypoint composer local/php:${{ matrix.target }} --version
+          if [ "${{ matrix.target }}" = "ci" ]; then
+            # Mesmos programas usados pelo actions/cache; também valida UID sem entrada no passwd.
+            docker run --rm --user 1001 --entrypoint sh local/php:ci -ec '
+              archive_dir=$(mktemp -d)
+              cd "$archive_dir"
+              mkdir source restored
+              printf "cache fixture\n" > "source/file with spaces"
+              ln -s "file with spaces" source/link
+              tar --posix -cf cache.tar.zst --use-compress-program zstdmt source
+              tar -xf cache.tar.zst --use-compress-program unzstd -C restored
+              cmp "source/file with spaces" "restored/source/file with spaces"
+              test "$(readlink restored/source/link)" = "file with spaces"
+            '
+          fi
           if [ "${{ matrix.target }}" = "app" ]; then
             # O php-fpm sobe como multi pelo supervisor; como root ele exige "user" no pool.
             docker run --rm --entrypoint php-fpm${PHP_VERSION} local/php:app -t --fpm-config /etc/php/${PHP_VERSION}/fpm/php-fpm.conf
