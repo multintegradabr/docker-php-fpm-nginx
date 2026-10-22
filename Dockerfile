@@ -3,7 +3,7 @@
 # Imagem base dos projetos PHP da Multintegrada, montada como os servidores do Forge:
 # Ubuntu 24.04 + PHP do ppa:ondrej. Três estágios:
 #   base: PHP CLI com as extensões, Composer e o usuário multi (uid 1000)
-#   ci:   base + pcov (desligado), cliente do Postgres e zstd para os caches do CI
+#   ci:   base + pcov (desligado), cliente do Postgres, Python e zstd para o CI
 #   app:  base + php-fpm, nginx, supervisor, cron e Node, para o ambiente local
 
 ARG UBUNTU_VERSION=24.04
@@ -59,7 +59,9 @@ WORKDIR /var/www
 FROM base AS ci
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends php${PHP_VERSION}-pcov postgresql-client zstd \
+    # Os relatórios de testes/cobertura usam Python e sua biblioteca padrão.
+    # Dependência explícita: o bootstrap do PPA é removido no estágio base.
+    && apt-get install -y --no-install-recommends php${PHP_VERSION}-pcov postgresql-client python3 zstd \
     && phpdismod -v ${PHP_VERSION} -s cli pcov \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
