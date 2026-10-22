@@ -26,6 +26,7 @@ ARG APT_REFRESH=""
 
 RUN echo "apt refresh: ${APT_REFRESH}" \
     && apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
         ca-certificates curl git gnupg software-properties-common tzdata unzip zip \
     && add-apt-repository -y ppa:ondrej/php \
@@ -35,6 +36,8 @@ RUN echo "apt refresh: ${APT_REFRESH}" \
         php${PHP_VERSION}-intl php${PHP_VERSION}-mbstring php${PHP_VERSION}-opcache php${PHP_VERSION}-pgsql \
         php${PHP_VERSION}-readline php${PHP_VERSION}-redis php${PHP_VERSION}-sqlite3 php${PHP_VERSION}-xml \
         php${PHP_VERSION}-zip \
+    # Usado somente para cadastrar o PPA; remove também os auxiliares Python/Polkit.
+    && apt-get purge -y --auto-remove software-properties-common \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \
     && echo "${TZ}" > /etc/timezone \
     && apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
