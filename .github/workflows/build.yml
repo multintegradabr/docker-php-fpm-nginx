@@ -5,6 +5,7 @@ on:
     branches: [php8.2-nodejs-ubuntu]
   pull_request:
   # Rebuild semanal: pega os patches de segurança do PHP (ppa:ondrej) e do Ubuntu.
+  # O APT_REFRESH do dia invalida a camada do apt; o smoke test confere a versão instalada.
   schedule:
     - cron: "0 9 * * 1"
   workflow_dispatch:
@@ -33,12 +34,17 @@ jobs:
 
       - uses: docker/setup-buildx-action@v4
 
+      - name: Data do refresh do apt
+        id: refresh
+        run: echo "date=$(date -u +%Y%m%d)" >> "$GITHUB_OUTPUT"
+
       - name: Build
         uses: docker/build-push-action@v7
         with:
           context: .
           target: ${{ matrix.target }}
           load: true
+          build-args: APT_REFRESH=${{ steps.refresh.outputs.date }}
           tags: local/php:${{ matrix.target }}
           cache-from: type=gha,scope=${{ matrix.target }}
           cache-to: type=gha,mode=max,scope=${{ matrix.target }}
@@ -52,6 +58,20 @@ jobs:
           done
           if [ -n "$missing" ]; then echo "Extensões faltando:$missing"; exit 1; fi
           docker run --rm --entrypoint composer local/php:${{ matrix.target }} --version
+          # Falha se o ppa:ondrej já tem um PHP mais novo do que o instalado na imagem.
+          if ! docker run --rm --user root -e V="${PHP_VERSION}" --entrypoint sh local/php:${{ matrix.target }} -ec '
+            apt-get update -qq
+            inst=$(dpkg-query -W -f "\${Version}" "php$V-cli")
+            cand=$(apt-cache policy "php$V-cli" | sed -n "s/ *Candidate: //p")
+            echo "php$V-cli: instalado $inst, disponível $cand"
+            test "$inst" = "$cand"
+          '; then
+            msg="A imagem não está com o PHP mais recente do ppa:ondrej"
+            if [ "${{ github.event_name }}" = "schedule" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              echo "::error::$msg"; exit 1
+            fi
+            echo "::warning::$msg (o primeiro build do dia refaz a camada do apt)"
+          fi
           if [ "${{ matrix.target }}" = "ci" ]; then
             # Mesmos programas usados pelo actions/cache; também valida UID sem entrada no passwd.
             docker run --rm --user 1001 --entrypoint sh local/php:ci -ec '
@@ -95,6 +115,7 @@ jobs:
           context: .
           target: ${{ matrix.target }}
           push: true
+          build-args: APT_REFRESH=${{ steps.refresh.outputs.date }}
           # Sem attestation: ela cria manifests filhos que a retenção conta como versões e apaga,
           # deixando tags antigas quebradas.
           provenance: false

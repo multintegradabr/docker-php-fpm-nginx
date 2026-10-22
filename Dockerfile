@@ -20,7 +20,12 @@ ENV DEBIAN_FRONTEND=noninteractive \
 LABEL org.opencontainers.image.source="https://github.com/multintegradabr/docker-php-fpm-nginx" \
       org.opencontainers.image.description="PHP ${PHP_VERSION} em Ubuntu, no mesmo padrão dos servidores do Forge"
 
-RUN apt-get update \
+# Muda a cada dia no CI. Sem isso, o cache do build reaproveita a camada do apt e a imagem
+# segue com o PHP antigo enquanto a ubuntu:24.04 não mudar (21/10/2026: 8.2.34 vulnerável).
+ARG APT_REFRESH=""
+
+RUN echo "apt refresh: ${APT_REFRESH}" \
+    && apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates curl git gnupg software-properties-common tzdata unzip zip \
     && add-apt-repository -y ppa:ondrej/php \
