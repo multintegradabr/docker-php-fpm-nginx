@@ -5,7 +5,7 @@ Imagem base dos projetos PHP da Multintegrada, montada como os servidores do For
 | Tag | Estágio | Conteúdo | Uso |
 |---|---|---|---|
 | `ghcr.io/multintegradabr/php-fpm-nginx:8.2-app` | `app` | PHP 8.2 (CLI + FPM), nginx, supervisor, cron, Node 22, Composer, gh | Ambiente local dos projetos |
-| `ghcr.io/multintegradabr/php-fpm-nginx:8.2-ci` | `ci` | PHP 8.2 CLI, Composer, pcov (desligado), cliente do Postgres, zstd | Testes no CI (runner self-hosted) |
+| `ghcr.io/multintegradabr/php-fpm-nginx:8.2-ci` | `ci` | PHP 8.2 CLI, Composer, pcov (desligado), cliente do Postgres, Python 3, zstd | Testes no CI (runner self-hosted) |
 
 Cada build também publica tags fixas: `8.2-<estágio>-<AAAAMMDD>` e `8.2-<estágio>-<sha>`.
 
@@ -43,6 +43,8 @@ container:
 - A imagem não inclui servidor SSH.
 
 ## Estágio `ci`
+
+- Inclui Python 3 e sua biblioteca padrão para os scripts de métricas, cobertura e relatórios de segurança dos projetos consumidores. A instalação é explícita e não depende dos pacotes temporários de cadastro do PPA.
 
 - Inclui `zstd`, `zstdmt` e `unzstd`: o `actions/cache` seleciona zstd automaticamente quando o programa está disponível.
 - A primeira execução com zstd precisa criar um cache novo: o formato faz parte da versão interna do cache. Depois da publicação da imagem, rode o workflow de testes na branch principal dos projetos consumidores para aquecer o cache compartilhado com os PRs.
