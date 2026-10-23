@@ -8,6 +8,10 @@
 
 ARG UBUNTU_VERSION=24.04
 
+FROM ubuntu:${UBUNTU_VERSION} AS libavif-security
+COPY .docker/libavif /usr/local/src/libavif-security
+RUN sh /usr/local/src/libavif-security/build.sh
+
 FROM ubuntu:${UBUNTU_VERSION} AS base
 
 ARG PHP_VERSION=8.2
@@ -24,6 +28,8 @@ LABEL org.opencontainers.image.source="https://github.com/multintegradabr/docker
 # segue com o PHP antigo enquanto a ubuntu:24.04 não mudar (21/10/2026: 8.2.34 vulnerável).
 ARG APT_REFRESH=""
 
+COPY --from=libavif-security /packages/*.deb /tmp/libavif-security/
+
 RUN echo "apt refresh: ${APT_REFRESH}" \
     && apt-get update \
     && apt-get upgrade -y --no-install-recommends \
@@ -38,6 +44,9 @@ RUN echo "apt refresh: ${APT_REFRESH}" \
         php${PHP_VERSION}-intl php${PHP_VERSION}-mbstring php${PHP_VERSION}-opcache php${PHP_VERSION}-pgsql \
         php${PHP_VERSION}-readline php${PHP_VERSION}-redis php${PHP_VERSION}-sqlite3 php${PHP_VERSION}-xml \
         php${PHP_VERSION}-zip \
+    # Backport local explícito, construído e testado a partir do source package Ubuntu.
+    # Se um pacote oficial mais novo conflitar, falhar em vez de fazer downgrade.
+    && apt-get install -y --no-install-recommends /tmp/libavif-security/*.deb \
     # Usado somente para cadastrar o PPA; remove também os auxiliares Python/Polkit.
     && apt-get purge -y --auto-remove software-properties-common \
     && ln -fs /usr/share/zoneinfo/${TZ} /etc/localtime \

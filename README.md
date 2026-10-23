@@ -28,6 +28,42 @@ em 1.3; a verificação usa a versão completa do pacote Debian/Ubuntu. O piso d
 ser revisto junto com o status do fornecedor ao mudar a versão base do Ubuntu.
 Os relatórios OSV continuam completos, sem ignores.
 
+## Backport local de libavif
+
+Mantemos Ubuntu 24.04. Para CVE-2025-48174, ainda sem pacote corrigido indicado
+pela Canonical nessa versão, o estágio auxiliar `libavif-security` reconstrói
+`libavif16` a partir do source package Ubuntu **1.0.4-1ubuntu3**.
+Índices assinados e hashes dos fontes/pacotes são validados pelo APT.
+O pacote resultante tem versão **1.0.4-1ubuntu3+multintegradasec1** e mantenedor
+local explícito; não é apresentado como atualização oficial da Canonical.
+
+O único patch de código adiciona a verificação de transbordamento de
+`stream->offset + size` antes de ampliar o buffer, seguindo o
+[commit upstream 50a7430](https://github.com/AOMediaCodec/libavif/commit/50a743062938a3828581d725facc9c2b92a1d109).
+O build preserva a receita de empacotamento, hardening e codecs do Ubuntu.
+Compilador, fontes e dependências de build ficam no estágio auxiliar; somente
+o pacote `libavif16` resultante entra em `base`, compartilhado por `ci` e `app`.
+
+A construção exige que a regressão de overflow falhe no fonte original e passe
+após o patch. Ela compila a implementação real do stream e intercepta somente
+a realocação para rejeitar a entrada sem executar escrita fora do buffer.
+Também executa os 11 testes C/CLI upstream habilitados (GoogleTest não habilitado)
+e compara os símbolos exportados, SONAME e bibliotecas vinculadas com o pacote
+Ubuntu original. O CI exige a versão local exata e testa encode/decode AVIF,
+PNG e JPEG via PHP/GD como UID 1001, sem rede, verificando dimensões e cores.
+
+Este backport trata **somente CVE-2025-48174**. Não trata CVE-2025-48175 nem
+constitui auditoria de toda a biblioteca. O OSV continua vendo os avisos do
+pacote Ubuntu, sem ignores: um sufixo de versão local não informa ao catálogo
+quais patches foram aplicados. A evidência da correção está no patch e nos testes.
+
+Quando houver pacote oficial mais novo, revisar o status/changelog do fornecedor
+para essa CVE e remover este estágio, patch e gate ao confirmar a substituição.
+O APT não recebe `--allow-downgrades`; se a instalação do pacote local conflitar
+com uma versão oficial mais nova, o build falha para exigir essa revisão.
+
+Referência: [CVE-2025-48174 no Ubuntu](https://ubuntu.com/security/CVE-2025-48174).
+
 ## Acesso (pacote privado)
 
 Faça login no GHCR com o seu usuário do GitHub. O token precisa do escopo `read:packages`:
