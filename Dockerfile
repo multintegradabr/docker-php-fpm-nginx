@@ -82,9 +82,17 @@ FROM base AS app
 
 ARG NODE_MAJOR=22
 
-RUN apt-get update \
+COPY .docker/apt/nginx.asc /usr/share/keyrings/nginx.asc
+
+# Pacotes stable do fornecedor: 1.30.6 corrige os avisos recentes do Nginx.
+# A chave pública revisada fica no repo; APT valida assinatura e hashes dos pacotes.
+RUN . /etc/os-release \
+    && printf 'deb [signed-by=/usr/share/keyrings/nginx.asc] https://nginx.org/packages/ubuntu %s nginx\n' "$VERSION_CODENAME" > /etc/apt/sources.list.d/nginx.list \
+    && printf 'Package: nginx nginx-module-*\nPin: origin nginx.org\nPin-Priority: 900\n' > /etc/apt/preferences.d/99nginx \
+    && apt-get update \
     && apt-get install -y --no-install-recommends \
         php${PHP_VERSION}-fpm nginx supervisor cron sudo nano htop postgresql-client \
+    && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' nginx)" ge 1.30.6 \
     && curl -fsSL https://deb.nodesource.com/setup_${NODE_MAJOR}.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg -o /usr/share/keyrings/githubcli-archive-keyring.gpg \
@@ -106,7 +114,7 @@ COPY .docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY .docker/supervisor/php-nginx.conf /etc/supervisor/conf.d/php-nginx.conf
 COPY .docker /usr/local/docker
 
-RUN rm -f /etc/nginx/sites-enabled/default \
+RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf \
     && rm -rf /var/www/html \
     && mkdir -p /etc/nginx/ssl /run/php /var/log/php /home/multi/LogFiles \
     && ln -sf /dev/stdout /var/log/nginx/access.log \
