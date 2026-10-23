@@ -104,6 +104,13 @@ jobs:
             docker run --rm --entrypoint supervisord local/php:app --version
           fi
 
+      - name: Validate app HTTP, PHP-FPM and TLS
+        if: matrix.target == 'app'
+        run: |
+          docker run --rm --network none --user root --entrypoint sh \
+            -v "$PWD/.github/scripts/app-web-smoke.sh:/tmp/app-web-smoke.sh:ro" \
+            local/php:app /tmp/app-web-smoke.sh
+
       - name: Tags
         if: github.event_name != 'pull_request'
         id: tags
