@@ -9,6 +9,25 @@ Imagem base dos projetos PHP da Multintegrada, montada como os servidores do For
 
 Cada build também publica tags fixas: `8.2-<estágio>-<AAAAMMDD>` e `8.2-<estágio>-<sha>`.
 
+## Piso de segurança do zlib
+
+O estágio `base`, compartilhado por `app` e `ci`, exige `zlib1g` no mínimo
+`1:1.3.dfsg-3.1ubuntu2.3`. Esse é o pacote que a
+[Canonical identifica como corrigido para CVE-2026-85091 no Ubuntu 24.04](https://ubuntu.com/security/CVE-2026-85091).
+O APT continua obtendo as atualizações assinadas dos repositórios Ubuntu; não
+há biblioteca compilada localmente ou pacote de outra distribuição.
+
+O build atualiza o sistema e falha se o mirror/cache só fornecer uma versão
+anterior ao piso. O smoke do CI repete essa verificação em ambos os estágios e,
+como UID 1001 sem acesso à rede, testa gzip, deflate, streams gzip e ZIP no PHP
+com dados vazios, repetitivos e binários. São testes de compatibilidade dos
+consumidores da biblioteca, não uma reprodução do exploit.
+
+Como a correção é um backport, a versão upstream exibida pelo PHP pode continuar
+em 1.3; a verificação usa a versão completa do pacote Debian/Ubuntu. O piso deve
+ser revisto junto com o status do fornecedor ao mudar a versão base do Ubuntu.
+Os relatórios OSV continuam completos, sem ignores.
+
 ## Acesso (pacote privado)
 
 Faça login no GHCR com o seu usuário do GitHub. O token precisa do escopo `read:packages`:
