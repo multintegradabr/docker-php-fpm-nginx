@@ -58,6 +58,15 @@ jobs:
           done
           if [ -n "$missing" ]; then echo "Extensões faltando:$missing"; exit 1; fi
           docker run --rm --entrypoint composer local/php:${{ matrix.target }} --version
+          # Somente o pacote local testado é aceito até haver revisão do backport oficial.
+          docker run --rm --user 1001 --network none --entrypoint sh \
+            -v "$PWD/.github/scripts/gd-avif-smoke.php:/tmp/gd-avif-smoke.php:ro" \
+            local/php:${{ matrix.target }} -ec '
+              version=$(dpkg-query -W -f "\${Version}" libavif16)
+              echo "libavif16: $version"
+              test "$version" = "1.0.4-1ubuntu3+multintegradasec1"
+              php /tmp/gd-avif-smoke.php
+            '
           # Piso do backport de zlib para CVE-2026-85091; versões upstream não mostram o backport.
           docker run --rm --user 1001 --network none --entrypoint sh \
             -v "$PWD/.github/scripts/zlib-smoke.php:/tmp/zlib-smoke.php:ro" \
