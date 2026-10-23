@@ -28,7 +28,9 @@ RUN echo "apt refresh: ${APT_REFRESH}" \
     && apt-get update \
     && apt-get upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends \
-        ca-certificates curl git gnupg software-properties-common tzdata unzip zip \
+        ca-certificates curl git gnupg software-properties-common tzdata unzip zip zlib1g \
+    # CVE-2026-85091: backport oficial do Ubuntu 24.04; falha se o mirror/cache estiver antigo.
+    && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' zlib1g)" ge '1:1.3.dfsg-3.1ubuntu2.3' \
     && add-apt-repository -y ppa:ondrej/php \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
