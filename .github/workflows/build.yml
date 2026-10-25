@@ -64,7 +64,7 @@ jobs:
             local/php:${{ matrix.target }} -ec '
               version=$(dpkg-query -W -f "\${Version}" libavif16)
               echo "libavif16: $version"
-              test "$version" = "1.0.4-1ubuntu3+multintegradasec1"
+              test "$version" = "1.0.4-1ubuntu3+multintegradasec2"
               php /tmp/gd-avif-smoke.php
             '
           # Piso do backport de zlib para CVE-2026-85091; versões upstream não mostram o backport.

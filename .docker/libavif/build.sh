@@ -2,7 +2,7 @@
 set -eu
 
 source_version=1.0.4-1ubuntu3
-package_version=${source_version}+multintegradasec1
+package_version=${source_version}+multintegradasec2
 fixes=/usr/local/src/libavif-security
 export DEBIAN_FRONTEND=noninteractive
 export DEB_BUILD_OPTIONS='nodoc parallel=2'
@@ -36,6 +36,8 @@ test "$before_exit" = 1
 export QUILT_PATCHES=debian/patches
 quilt import -P multintegrada-CVE-2025-48174.patch "$fixes/CVE-2025-48174.patch"
 quilt push
+quilt import -P multintegrada-CVE-2025-48175.patch "$fixes/CVE-2025-48175.patch"
+quilt push
 compile_regression
 /build/stream-test
 
@@ -44,7 +46,7 @@ sed -i 's/-DAVIF_BUILD_APPS=ON /-DAVIF_BUILD_TESTS=ON -DAVIF_ENABLE_GTEST=OFF -D
 sed -i 's/^Maintainer:.*/Maintainer: Multintegrada Local Security Backports <noreply@localhost>/' debian/control
 {
     printf 'libavif (%s) noble; urgency=medium\n\n' "$package_version"
-    printf '  * Local backport of the upstream stream overflow guard (CVE-2025-48174).\n\n'
+    printf '  * Local backports of stream and row-stride overflow fixes (CVE-2025-48174/48175).\n\n'
     printf ' -- Multintegrada Local Security Backports <noreply@localhost>  Fri, 23 Oct 2026 00:00:00 +0000\n\n'
     cat debian/changelog
 } > /build/changelog
@@ -69,4 +71,15 @@ done
 cmp /build/original.symbols /build/patched.symbols
 cmp /build/original.linkage /build/patched.linkage
 echo 'Packaged libavif: exported symbols, SONAME and linked codecs preserved'
+
+# Exercise the public API against both packaged libraries, including RGB/RGBA,
+# 8/12-bit channels and separately overflowing RGB input and all Y/U/V outputs.
+cc -std=c99 -Wall -Wextra -Werror -I "$PWD/include" "$fixes/row-stride-test.c" \
+    "$original" -o /build/row-stride-test
+set +e
+LD_LIBRARY_PATH="$(dirname "$original")" /build/row-stride-test
+before_exit=$?
+set -e
+test "$before_exit" = 1
+LD_LIBRARY_PATH="$(dirname "$patched")" /build/row-stride-test
 cp "/build/libavif16_${package_version}_$(dpkg --print-architecture).deb" /packages/
