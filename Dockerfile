@@ -39,11 +39,13 @@ RUN echo "apt refresh: ${APT_REFRESH}" \
     && dpkg --compare-versions "$(dpkg-query -W -f='${Version}' zlib1g)" ge '1:1.3.dfsg-3.1ubuntu2.3' \
     && add-apt-repository -y ppa:ondrej/php \
     && apt-get update \
+    # A partir do 8.5 o opcache é parte do PHP e o ppa:ondrej não tem mais o pacote php8.5-opcache.
     && apt-get install -y --no-install-recommends \
         php${PHP_VERSION}-cli php${PHP_VERSION}-bcmath php${PHP_VERSION}-curl php${PHP_VERSION}-gd \
-        php${PHP_VERSION}-intl php${PHP_VERSION}-mbstring php${PHP_VERSION}-opcache php${PHP_VERSION}-pgsql \
+        php${PHP_VERSION}-intl php${PHP_VERSION}-mbstring php${PHP_VERSION}-pgsql \
         php${PHP_VERSION}-readline php${PHP_VERSION}-redis php${PHP_VERSION}-sqlite3 php${PHP_VERSION}-xml \
         php${PHP_VERSION}-zip \
+        $(dpkg --compare-versions "${PHP_VERSION}" lt 8.5 && echo php${PHP_VERSION}-opcache) \
     # Backport local explícito, construído e testado a partir do source package Ubuntu.
     # Se um pacote oficial mais novo conflitar, falhar em vez de fazer downgrade.
     && apt-get install -y --no-install-recommends /tmp/libavif-security/*.deb \
@@ -62,6 +64,12 @@ RUN userdel --remove ubuntu \
     && mkdir -p /var/www && chown multi:multi /var/www
 
 COPY .docker/php/php-fpm/custom.ini /etc/php/${PHP_VERSION}/cli/conf.d/99-custom.ini
+
+# session.sid_length e session.sid_bits_per_character são deprecated desde o 8.4 e geram um aviso
+# a cada execução do php.
+RUN if dpkg --compare-versions "${PHP_VERSION}" ge 8.4; then \
+        sed -i '/^session\.sid_\(length\|bits_per_character\) /d' /etc/php/${PHP_VERSION}/cli/conf.d/99-custom.ini; \
+    fi
 
 WORKDIR /var/www
 
@@ -125,7 +133,12 @@ COPY .docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY .docker/supervisor/php-nginx.conf /etc/supervisor/conf.d/php-nginx.conf
 COPY .docker /usr/local/docker
 
-RUN rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf \
+RUN sed -i "s/@PHP_VERSION@/${PHP_VERSION}/g" \
+        /etc/php/${PHP_VERSION}/fpm/php-fpm.conf /etc/supervisor/conf.d/php-nginx.conf \
+    && if dpkg --compare-versions "${PHP_VERSION}" ge 8.4; then \
+        sed -i '/^session\.sid_\(length\|bits_per_character\) /d' /etc/php/${PHP_VERSION}/fpm/conf.d/99-custom.ini; \
+    fi \
+    && rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf \
     && rm -rf /var/www/html \
     && mkdir -p /etc/nginx/ssl /run/php /var/log/php /home/multi/LogFiles \
     && ln -sf /dev/stdout /var/log/nginx/access.log \

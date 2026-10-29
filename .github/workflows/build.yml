@@ -16,7 +16,6 @@ concurrency:
 
 env:
   IMAGE: ghcr.io/multintegradabr/php-fpm-nginx
-  PHP_VERSION: "8.2"
 
 jobs:
   build:
@@ -28,7 +27,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        php: ["8.2", "8.4", "8.5"]
         target: [ci, app]
+    env:
+      PHP_VERSION: ${{ matrix.php }}
     steps:
       - uses: actions/checkout@v7
 
@@ -44,10 +46,12 @@ jobs:
           context: .
           target: ${{ matrix.target }}
           load: true
-          build-args: APT_REFRESH=${{ steps.refresh.outputs.date }}
+          build-args: |
+            APT_REFRESH=${{ steps.refresh.outputs.date }}
+            PHP_VERSION=${{ matrix.php }}
           tags: local/php:${{ matrix.target }}
-          cache-from: type=gha,scope=${{ matrix.target }}
-          cache-to: type=gha,mode=max,scope=${{ matrix.target }}
+          cache-from: type=gha,scope=${{ matrix.php }}-${{ matrix.target }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.php }}-${{ matrix.target }}
 
       - name: Smoke test
         run: |
@@ -151,12 +155,14 @@ jobs:
           context: .
           target: ${{ matrix.target }}
           push: true
-          build-args: APT_REFRESH=${{ steps.refresh.outputs.date }}
+          build-args: |
+            APT_REFRESH=${{ steps.refresh.outputs.date }}
+            PHP_VERSION=${{ matrix.php }}
           # Sem attestation: ela cria manifests filhos que a retenção conta como versões e apaga,
           # deixando tags antigas quebradas.
           provenance: false
           tags: ${{ steps.tags.outputs.list }}
-          cache-from: type=gha,scope=${{ matrix.target }}
+          cache-from: type=gha,scope=${{ matrix.php }}-${{ matrix.target }}
 
   # O pacote é privado e conta no armazenamento do plano: sem retenção, os rebuilds semanais
   # acumulam versões para sempre.
@@ -171,5 +177,5 @@ jobs:
         with:
           package-name: php-fpm-nginx
           package-type: container
-          # 2 versões por build (ci + app): ~15 builds, uns 3 meses de rebuild semanal.
-          min-versions-to-keep: 30
+          # 6 versões por build (8.2, 8.4 e 8.5, ci + app): ~15 builds, uns 3 meses de rebuild semanal.
+          min-versions-to-keep: 90
