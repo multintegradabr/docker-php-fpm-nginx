@@ -1,13 +1,15 @@
 # docker-php-fpm-nginx
 
-Imagem base dos projetos PHP da Multintegrada, montada como os servidores do Forge: **Ubuntu 24.04 + PHP 8.2 do `ppa:ondrej/php`**. Publicada no GitHub Container Registry, como pacote **privado**.
+Imagem base dos projetos PHP da Multintegrada, montada como os servidores do Forge: **Ubuntu 24.04 + PHP do `ppa:ondrej/php`**, em duas versões: 8.2 e 8.5. Publicada no GitHub Container Registry, como pacote **privado**.
 
 | Tag | Estágio | Conteúdo | Uso |
 |---|---|---|---|
 | `ghcr.io/multintegradabr/php-fpm-nginx:8.2-app` | `app` | PHP 8.2 (CLI + FPM), nginx, supervisor, cron, Node 22, Composer, gh | Ambiente local dos projetos |
 | `ghcr.io/multintegradabr/php-fpm-nginx:8.2-ci` | `ci` | PHP 8.2 CLI, Composer, pcov (desligado), cliente do Postgres, Python 3, zstd | Testes no CI (runner self-hosted) |
+| `ghcr.io/multintegradabr/php-fpm-nginx:8.5-app` | `app` | Igual à `8.2-app`, com PHP 8.5 | Ambiente local na migração para o 8.5 |
+| `ghcr.io/multintegradabr/php-fpm-nginx:8.5-ci` | `ci` | Igual à `8.2-ci`, com PHP 8.5 | CI na migração para o 8.5 |
 
-Cada build também publica tags fixas: `8.2-<estágio>-<AAAAMMDD>` e `8.2-<estágio>-<sha>`.
+Cada build também publica tags fixas: `<php>-<estágio>-<AAAAMMDD>` e `<php>-<estágio>-<sha>`.
 
 ## Piso de segurança do zlib
 
@@ -172,6 +174,10 @@ docker run --rm --network none --user root --entrypoint sh \
 ```bash
 docker build --target app -t php-fpm-nginx:8.2-app .
 docker build --target ci  -t php-fpm-nginx:8.2-ci .
+
+# PHP 8.5
+docker build --target app --build-arg PHP_VERSION=8.5 -t php-fpm-nginx:8.5-app .
+docker build --target ci  --build-arg PHP_VERSION=8.5 -t php-fpm-nginx:8.5-ci .
 ```
 
 O workflow `.github/workflows/build.yml` faz build e smoke test em todo PR. Em push na branch padrão, toda segunda-feira (patches de segurança) e sob demanda, ele também publica as tags e aplica a retenção de versões.
