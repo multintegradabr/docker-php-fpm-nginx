@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ["8.2", "8.5"]
+        php: ["8.2", "8.4", "8.5"]
         target: [ci, app]
     env:
       PHP_VERSION: ${{ matrix.php }}
@@ -177,5 +177,5 @@ jobs:
         with:
           package-name: php-fpm-nginx
           package-type: container
-          # 4 versões por build (8.2 e 8.5, ci + app): ~15 builds, uns 3 meses de rebuild semanal.
-          min-versions-to-keep: 60
+          # 6 versões por build (8.2, 8.4 e 8.5, ci + app): ~15 builds, uns 3 meses de rebuild semanal.
+          min-versions-to-keep: 90
