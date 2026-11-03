@@ -128,16 +128,13 @@ COPY .docker/nginx/nginx.conf /etc/nginx/nginx.conf
 COPY .docker/nginx/default.conf /etc/nginx/sites-enabled/default.conf
 COPY .docker/php/php-fpm/php-fpm.conf /etc/php/${PHP_VERSION}/fpm/php-fpm.conf
 COPY .docker/php/php-fpm/www.conf /etc/php/${PHP_VERSION}/fpm/pool.d/www.conf
-COPY .docker/php/php-fpm/custom.ini /etc/php/${PHP_VERSION}/fpm/conf.d/99-custom.ini
 COPY .docker/supervisor/supervisord.conf /etc/supervisor/supervisord.conf
 COPY .docker/supervisor/php-nginx.conf /etc/supervisor/conf.d/php-nginx.conf
 COPY .docker /usr/local/docker
 
 RUN sed -i "s/@PHP_VERSION@/${PHP_VERSION}/g" \
         /etc/php/${PHP_VERSION}/fpm/php-fpm.conf /etc/supervisor/conf.d/php-nginx.conf \
-    && if dpkg --compare-versions "${PHP_VERSION}" ge 8.4; then \
-        sed -i '/^session\.sid_\(length\|bits_per_character\) /d' /etc/php/${PHP_VERSION}/fpm/conf.d/99-custom.ini; \
-    fi \
+    && cp /etc/php/${PHP_VERSION}/cli/conf.d/99-custom.ini /etc/php/${PHP_VERSION}/fpm/conf.d/99-custom.ini \
     && rm -f /etc/nginx/sites-enabled/default /etc/nginx/conf.d/default.conf \
     && rm -rf /var/www/html \
     && mkdir -p /etc/nginx/ssl /run/php /var/log/php /home/multi/LogFiles \
