@@ -89,7 +89,7 @@ RUN apt-get update \
 # CI do SI (08/10, 2 jobs simultâneos): "Execute tests" de 319 s para 230 s junto com o route:cache.
 # revalidate_freq=0 confere o mtime a cada require, para um arquivo reescrito no meio da
 # suíte (view compilada, cache de rotas) não rodar o opcode antigo.
-RUN printf 'opcache.enable_cli=1\nopcache.revalidate_freq=0\n' > /etc/php/${PHP_VERSION}/cli/conf.d/99-ci-opcache.ini
+RUN printf 'opcache.enable_cli=1\nopcache.revalidate_freq=0\nopcache.jit=disable\n' > /etc/php/${PHP_VERSION}/cli/conf.d/99-ci-opcache.ini
 
 # Sem USER fixo: o job do CI define o uid com --user, para casar com o dono do workspace no host.
 # Esse uid não existe no /etc/passwd, e o HOME padrão (/) não é gravável para o git do checkout.
